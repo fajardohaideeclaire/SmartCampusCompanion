@@ -10,6 +10,5 @@ fun AppNav(navController: NavHostController) {
     NavHost(navController, startDestination = "login") {
         composable("login") { LoginScreen(navController) }
         composable("dashboard") { DashboardScreen(navController) }
-        composable("campus") { CampusInfoScreen() }
-    }
+        composable("campus") { CampusInfoScreen(navController) }    }
 }
