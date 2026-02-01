@@ -20,6 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.compose.foundation.clickable
+import com.example.smartcampuscompanion.ui.theme.DarkGreen
+import com.example.smartcampuscompanion.ui.theme.MediumGreen
+import com.example.smartcampuscompanion.ui.theme.PaleGreen
 
 data class Department(
     val name: String,
