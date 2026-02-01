@@ -10,3 +10,10 @@ application are working as expected.
 - Username field accepts input
 - Password field accepts input
 - Login button is visible and clickable
+
+## Dashboard Screen Tests
+
+- Welcome message is displayed
+- Dashboard loads after login
+- Campus Information button is visible
+- Navigation to Campus Information screen works
