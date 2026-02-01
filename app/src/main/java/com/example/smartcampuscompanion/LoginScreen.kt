@@ -1,4 +1,4 @@
-package com.example.smartcampus
+package com.example.smartcampuscompanion
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -22,5 +22,15 @@ fun LoginScreen(navController: NavHostController) {
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.primary
         )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        OutlinedTextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Username") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
     }
 }
