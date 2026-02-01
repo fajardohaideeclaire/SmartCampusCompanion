@@ -18,7 +18,6 @@ class CampusInfoScreen {
             "Engineering\nEmail: eng@campus.edu",
             "Business\nEmail: biz@campus.edu"
         )
-
         LazyColumn {
             items(departments) { department ->
                 Card(modifier = Modifier.padding(8.dp)) {
