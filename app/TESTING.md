@@ -17,3 +17,10 @@ application are working as expected.
 - Dashboard loads after login
 - Campus Information button is visible
 - Navigation to Campus Information screen works
+
+## Campus Information Module Tests
+
+- List of departments is displayed
+- Contact information is visible
+- Items are properly spaced
+- Screen scrolls smoothly
