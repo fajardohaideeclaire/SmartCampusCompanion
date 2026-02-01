@@ -14,3 +14,12 @@ This project is developed as part of the Android Development Case Study.
 - Fernandez – UI/UX Developer
 - Dacillo – Feature Developer
 - Del Mundo – QA / Documenter  
+
+
+## Git Workflow
+
+- The project was initialized using Android Studio.
+- A GitHub repository was created automatically.
+- Each member works on a personal branch.
+- Pull Requests are used to merge changes into the develop branch.
+- The develop branch is merged into main after testing.
