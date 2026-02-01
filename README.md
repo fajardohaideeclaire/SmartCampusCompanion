@@ -23,3 +23,11 @@ This project is developed as part of the Android Development Case Study.
 - Each member works on a personal branch.
 - Pull Requests are used to merge changes into the develop branch.
 - The develop branch is merged into main after testing.
+
+
+## Branches Used
+
+- main – Final stable version of the application
+- develop – Integration and testing branch
+- personal branches – Individual development branches 
+
