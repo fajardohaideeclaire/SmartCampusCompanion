@@ -4,6 +4,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.Card
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.padding
 
 class CampusInfoScreen {
 
@@ -17,9 +21,13 @@ class CampusInfoScreen {
 
         LazyColumn {
             items(departments) { department ->
-                Text(text = department)
+                Card(modifier = Modifier.padding(8.dp)) {
+                    Text(
+                        text = department,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
         }
     }
-
 }
