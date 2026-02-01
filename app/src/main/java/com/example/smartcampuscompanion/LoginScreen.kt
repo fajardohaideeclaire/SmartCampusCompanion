@@ -41,6 +41,16 @@ fun LoginScreen(navController: NavHostController) {
             modifier = Modifier.fillMaxWidth()
         )
 
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = { navController.navigate("dashboard") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Login")
+        }
+
+
 
     }
 }
