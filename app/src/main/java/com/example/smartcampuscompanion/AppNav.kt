@@ -12,8 +12,25 @@ fun AppNav(navController: NavHostController) {
         composable("dashboard") { DashboardScreen(navController) }
         composable("campus") { CampusInfoScreen(navController) }
         composable("tasks") {
+
+            val context = LocalContext.current
+            val database = AppDatabase.getDatabase(context)
+
+            val repository = TaskRepository(database.taskDao())
+            val viewModel = TaskViewModel(repository)
+
+            TaskScreen(viewModel)
         }
         composable("announcements") {
+
+            val context = LocalContext.current
+            val database = AppDatabase.getDatabase(context)
+
+            val repository = AnnouncementRepository(database.announcementDao())
+            val viewModel = AnnouncementViewModel(repository)
+
+            AnnouncementScreen(viewModel)
         }
+
     }
 }
