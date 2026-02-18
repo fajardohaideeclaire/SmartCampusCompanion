@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
+import com.example.smartcampuscompanion.data.local.TaskEntity
 import com.example.smartcampuscompanion.viewmodel.TaskViewModel
 
 @Composable
@@ -42,5 +43,24 @@ fun TaskScreen(viewModel: TaskViewModel) {
             label = { Text("Task Description") },
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = {
+                viewModel.addTask(
+                    TaskEntity(
+                        title = title,
+                        description = description,
+                        dateTime = "Today"
+                    )
+                )
+                title = ""
+                description = ""
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Add Task")
+        }
     }
 }
