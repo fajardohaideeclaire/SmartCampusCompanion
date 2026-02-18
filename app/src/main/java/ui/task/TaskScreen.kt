@@ -128,6 +128,16 @@ fun TaskScreen(viewModel: TaskViewModel) {
                         ) {
                             Text("Delete")
                         }
+                        Button(
+                            onClick = {
+                                viewModel.updateTask(
+                                    task.copy(title = task.title + " (Edited)")
+                                )
+                            }
+                        ) {
+                            Text("Edit")
+                        }
+
                     }
                 }
             }
