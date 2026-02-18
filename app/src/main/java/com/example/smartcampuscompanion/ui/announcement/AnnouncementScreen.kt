@@ -54,6 +54,14 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel) {
                         }
                     }
 
+                    if (item.isRead) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Read",
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
                 }
             }
         }
