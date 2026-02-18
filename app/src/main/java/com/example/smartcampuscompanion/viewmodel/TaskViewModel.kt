@@ -36,4 +36,12 @@ class TaskViewModel(
             repository.update(task)
         }
     }
+
+    fun toggleTaskCompletion(task: TaskEntity) {
+        viewModelScope.launch {
+            repository.update(
+                task.copy(isCompleted = !task.isCompleted)
+            )
+        }
+    }
 }
