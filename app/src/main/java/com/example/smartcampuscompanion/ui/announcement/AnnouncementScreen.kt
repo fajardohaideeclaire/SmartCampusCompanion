@@ -41,6 +41,19 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel) {
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(text = item.content)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    if (!item.isRead) {
+                        androidx.compose.material3.Button(
+                            onClick = {
+                                viewModel.markAsRead(item)
+                            }
+                        ) {
+                            Text("Mark as Read")
+                        }
+                    }
+
                 }
             }
         }
