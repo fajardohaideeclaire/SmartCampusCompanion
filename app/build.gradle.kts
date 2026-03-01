@@ -56,6 +56,7 @@ android {
         implementation(libs.androidx.compose.ui.graphics)
         implementation(libs.androidx.compose.ui.tooling.preview)
         implementation(libs.androidx.compose.material3)
+        implementation("androidx.compose.material:material-icons-extended")
         implementation(libs.androidx.navigation.compose)
         implementation("androidx.room:room-runtime:2.6.1")
         kapt("androidx.room:room-compiler:2.6.1")
