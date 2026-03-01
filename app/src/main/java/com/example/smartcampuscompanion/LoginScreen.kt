@@ -8,6 +8,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,19 +18,20 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.smartcampuscompanion.ui.theme.DarkGreen
 import com.example.smartcampuscompanion.ui.theme.MediumGreen
-import com.example.smartcampuscompanion.ui.theme.PaleGreen
-
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     val gradient = Brush.linearGradient(
         colors = listOf(
@@ -138,7 +141,10 @@ fun LoginScreen(navController: NavHostController) {
                     // Username field
                     OutlinedTextField(
                         value = username,
-                        onValueChange = { username = it },
+                        onValueChange = {
+                            username = it
+                            errorMessage = "" // Clear error when typing
+                        },
                         label = { Text("Username") },
                         leadingIcon = {
                             Icon(
@@ -157,7 +163,8 @@ fun LoginScreen(navController: NavHostController) {
                             unfocusedBorderColor = Color(0xFFCCCCCC),
                             focusedLabelColor = MediumGreen,
                             unfocusedLabelColor = Color(0xFF888888)
-                        )
+                        ),
+                        isError = errorMessage.isNotEmpty()
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -165,7 +172,10 @@ fun LoginScreen(navController: NavHostController) {
                     // Password field
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = {
+                            password = it
+                            errorMessage = "" // Clear error when typing
+                        },
                         label = { Text("Password") },
                         leadingIcon = {
                             Icon(
@@ -174,7 +184,16 @@ fun LoginScreen(navController: NavHostController) {
                                 tint = MediumGreen
                             )
                         },
-                        visualTransformation = PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible) Icons.Rounded.Visibility else Icons.Rounded.VisibilityOff,
+                                    contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                                    tint = MediumGreen
+                                )
+                            }
+                        },
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(14.dp),
@@ -185,8 +204,20 @@ fun LoginScreen(navController: NavHostController) {
                             unfocusedBorderColor = Color(0xFFCCCCCC),
                             focusedLabelColor = MediumGreen,
                             unfocusedLabelColor = Color(0xFF888888)
-                        )
+                        ),
+                        isError = errorMessage.isNotEmpty()
                     )
+
+                    // Error message
+                    if (errorMessage.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = errorMessage,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -205,7 +236,26 @@ fun LoginScreen(navController: NavHostController) {
 
                     // Login button
                     Button(
-                        onClick = { navController.navigate("dashboard") },
+                        onClick = {
+                            when {
+                                username.isBlank() -> {
+                                    errorMessage = "Please enter username"
+                                }
+                                password.isBlank() -> {
+                                    errorMessage = "Please enter password"
+                                }
+                                // Hardcoded validation as per prelim requirements
+                                username == "admin" && password == "admin123" -> {
+                                    errorMessage = ""
+                                    navController.navigate("dashboard") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                }
+                                else -> {
+                                    errorMessage = "Invalid username or password"
+                                }
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
@@ -246,7 +296,18 @@ fun LoginScreen(navController: NavHostController) {
                     color = Color.White
                 )
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Login hint
+            Text(
+                text = "Hint: admin / admin123",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color(0x99FFFFFF),
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
+
 
