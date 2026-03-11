@@ -1,102 +1,300 @@
 package com.example.smartcampuscompanion.ui.announcement
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.clickable
 import androidx.navigation.NavHostController
+import com.example.smartcampuscompanion.ui.theme.DarkGreen
+import com.example.smartcampuscompanion.ui.theme.MediumGreen
+import com.example.smartcampuscompanion.ui.theme.PaleGreen
 import com.example.smartcampuscompanion.viewmodel.AnnouncementViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostController) {
     val announcements by viewModel.announcements.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Announcements", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        if (announcements.isEmpty()) {
+    val unread = announcements.filter { !it.isRead }
+    val read = announcements.filter { it.isRead }
+
+    val gradient = Brush.linearGradient(colors = listOf(DarkGreen, MediumGreen))
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        // --- Gradient Header ---
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(gradient)
+                .padding(top = 52.dp, bottom = 28.dp, start = 24.dp, end = 24.dp)
+        ) {
+            // Decorative circle
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp)
+                    .size(120.dp)
+                    .align(Alignment.TopEnd)
+                    .offset(x = 40.dp, y = -40.dp)
+                    .background(color = Color(0x1AFFFFFF), shape = CircleShape)
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .background(color = Color(0x1AFFFFFF), shape = CircleShape)
+                        .clickable { navController.popBackStack() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(
+                        text = "Announcements",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        color = Color.White
+                    )
+                    Text(
+                        text = if (unread.isEmpty()) "All caught up!"
+                        else "${unread.size} unread message${if (unread.size > 1) "s" else ""}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xB3FFFFFF)
+                    )
+                }
+            }
+        }
+
+        // --- Body ---
+        if (announcements.isEmpty()) {
+            // Empty state
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .background(color = PaleGreen, shape = CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Notifications,
+                        contentDescription = null,
+                        tint = MediumGreen,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = "No announcements yet.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = "No Announcements Yet",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = DarkGreen
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Check back later for updates from your campus.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF888888)
                 )
             }
         } else {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(vertical = 16.dp)
+                    .padding(horizontal = 20.dp),
+                contentPadding = PaddingValues(vertical = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(announcements, key = { it.id }) { item ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = item.title,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                if (item.isRead) {
-                                    Text(
-                                        text = "Read",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Text(
-                                text = item.date,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(text = item.content)
-
-                            if (!item.isRead) {
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Button(onClick = { viewModel.markAsRead(item) }) {
-                                    Text("Mark as Read")
-                                }
-                            }
-                        }
+                // --- Unread Section ---
+                if (unread.isNotEmpty()) {
+                    item {
+                        SectionLabel(
+                            text = "New",
+                            badge = unread.size
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
+                    items(unread, key = { it.id }) { item ->
+                        AnnouncementCard(
+                            title = item.title,
+                            content = item.content,
+                            date = item.date,
+                            category = item.category,
+                            isRead = false,
+                            onMarkAsRead = { viewModel.markAsRead(item) }
+                        )
+                    }
+                }
+
+                // --- Read Section ---
+                if (read.isNotEmpty()) {
+                    item {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        SectionLabel(text = "Earlier")
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    items(read, key = { it.id }) { item ->
+                        AnnouncementCard(
+                            title = item.title,
+                            content = item.content,
+                            date = item.date,
+                            category = item.category,
+                            isRead = true,
+                            onMarkAsRead = {}
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SectionLabel(text: String, badge: Int? = null) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+            color = DarkGreen
+        )
+        if (badge != null) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .background(color = MediumGreen, shape = CircleShape)
+                    .padding(horizontal = 8.dp, vertical = 2.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = badge.toString(),
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AnnouncementCard(
+    title: String,
+    content: String,
+    date: String,
+    category: String,
+    isRead: Boolean,
+    onMarkAsRead: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isRead) Color(0xFFF9F9F9) else Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isRead) 1.dp else 4.dp
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Category tag
+                Box(
+                    modifier = Modifier
+                        .background(
+                            color = if (isRead) Color(0xFFEEEEEE) else PaleGreen,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(horizontal = 10.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = category,
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                        color = if (isRead) Color(0xFF888888) else MediumGreen
+                    )
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Unread dot indicator
+                    if (!isRead) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(color = MediumGreen, shape = CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+                    Text(
+                        text = date,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF888888)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = if (isRead) FontWeight.Normal else FontWeight.SemiBold
+                ),
+                color = if (isRead) Color(0xFF666666) else DarkGreen
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = content,
+                style = MaterialTheme.typography.bodySmall,
+                color = if (isRead) Color(0xFF999999) else Color(0xFF444444)
+            )
+
+            if (!isRead) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = onMarkAsRead,
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MediumGreen,
+                        contentColor = Color.White
+                    ),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                    modifier = Modifier.height(34.dp)
+                ) {
+                    Text(
+                        text = "Mark as Read",
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
             }
         }
