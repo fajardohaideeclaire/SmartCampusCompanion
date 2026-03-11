@@ -10,5 +10,7 @@ data class AnnouncementEntity(
     val title: String,
     val content: String,
     val date: String,
+    val category: String = "General",
     val isRead: Boolean = false
 )
+
