@@ -1,6 +1,7 @@
 package com.example.smartcampuscompanion
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -21,29 +22,39 @@ fun AppNav(navController: NavHostController) {
     val context = LocalContext.current
     val database = AppDatabase.getDatabase(context)
 
+    // announcementViewModel is created here at the AppNav composable level
+    // which IS a valid composable scope — viewModel() works here
+    val announcementRepository = remember {
+        AnnouncementRepository(database.announcementDao())
+    }
+    val announcementViewModel: AnnouncementViewModel = viewModel(
+        factory = AnnouncementViewModelFactory(announcementRepository)
+    )
+
     NavHost(navController, startDestination = "login") {
         composable("login") {
             LoginScreen(navController)
         }
         composable("dashboard") {
-            DashboardScreen(navController)
+            DashboardScreen(
+                navController = navController,
+                announcementViewModel = announcementViewModel
+            )
         }
         composable("campus") {
             CampusInfoScreen(navController)
         }
         composable("tasks") {
-            val repository = TaskRepository(database.taskDao())
-            val viewModel: TaskViewModel = viewModel(
-                factory = TaskViewModelFactory(repository)
+            val taskRepository = remember {
+                TaskRepository(database.taskDao())
+            }
+            val taskViewModel: TaskViewModel = viewModel(
+                factory = TaskViewModelFactory(taskRepository)
             )
-            TaskScreen(viewModel, navController)
+            TaskScreen(taskViewModel, navController)
         }
         composable("announcements") {
-            val repository = AnnouncementRepository(database.announcementDao())
-            val viewModel: AnnouncementViewModel = viewModel(
-                factory = AnnouncementViewModelFactory(repository)
-            )
-            AnnouncementScreen(viewModel, navController)
+            AnnouncementScreen(announcementViewModel, navController)
         }
     }
 }
