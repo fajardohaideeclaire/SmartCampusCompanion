@@ -1,4 +1,5 @@
 package com.example.smartcampuscompanion
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,9 +10,8 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -19,13 +19,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.smartcampuscompanion.ui.theme.DarkGreen
 import com.example.smartcampuscompanion.ui.theme.MediumGreen
 import com.example.smartcampuscompanion.ui.theme.PaleGreen
+import com.example.smartcampuscompanion.viewmodel.AnnouncementViewModel
 
 @Composable
-fun DashboardScreen(navController: NavHostController) {
+fun DashboardScreen(
+    navController: NavHostController,
+    announcementViewModel: AnnouncementViewModel
+) {
+    val announcements by announcementViewModel.announcements.collectAsState()
+    val unreadCount = announcements.count { !it.isRead }
+
     val gradient = Brush.linearGradient(
         colors = listOf(DarkGreen, MediumGreen)
     )
@@ -54,6 +62,7 @@ fun DashboardScreen(navController: NavHostController) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Greeting
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
@@ -82,19 +91,48 @@ fun DashboardScreen(navController: NavHostController) {
                         )
                     }
                 }
+
+                // Notification bell with unread badge
                 Box(
                     modifier = Modifier
                         .size(42.dp)
-                        .background(color = Color(0x1AFFFFFF), shape = CircleShape)
                         .clickable { navController.navigate("announcements") },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Notifications,
-                        contentDescription = "Notifications",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
+                    // Bell background
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color = Color(0x1AFFFFFF), shape = CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Notifications,
+                            contentDescription = "Notifications",
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+
+                    // Unread count badge — only shown when unread > 0
+                    if (unreadCount > 0) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(16.dp)
+                                .background(color = Color(0xFFFF4444), shape = CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (unreadCount > 9) "9+" else unreadCount.toString(),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 8.sp
+                                ),
+                                color = Color.White
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -117,18 +155,17 @@ fun DashboardScreen(navController: NavHostController) {
             DashboardCard(
                 icon = Icons.Rounded.LocationOn,
                 title = "Campus Information",
-                subtitle = "Explore maps, facilities & more",
+                subtitle = "Explore colleges, facilities & more",
                 onClick = { navController.navigate("campus") }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Tasks & Announcements row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // Tasks Card
+                // Tasks card
                 Card(
                     modifier = Modifier
                         .weight(1f)
@@ -168,43 +205,66 @@ fun DashboardScreen(navController: NavHostController) {
                     }
                 }
 
-                // Announcements Card
-                Card(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { navController.navigate("announcements") },
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(18.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                // Announcements card with unread badge
+                Box(modifier = Modifier.weight(1f)) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { navController.navigate("announcements") },
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .background(color = PaleGreen, shape = RoundedCornerShape(14.dp)),
-                            contentAlignment = Alignment.Center
+                        Column(
+                            modifier = Modifier.padding(18.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Notifications,
-                                contentDescription = "Announcements",
-                                tint = MediumGreen,
-                                modifier = Modifier.size(24.dp)
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .background(color = PaleGreen, shape = RoundedCornerShape(14.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Notifications,
+                                    contentDescription = "Announcements",
+                                    tint = MediumGreen,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "Announcements",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                                color = DarkGreen
+                            )
+                            Text(
+                                text = if (unreadCount > 0) "$unreadCount unread" else "All read",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (unreadCount > 0) MediumGreen else Color(0xFF888888)
                             )
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Announcements",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                            color = DarkGreen
-                        )
-                        Text(
-                            text = "Campus updates",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF888888)
-                        )
+                    }
+
+                    // Badge on the card
+                    if (unreadCount > 0) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(top = 6.dp, end = 6.dp)
+                                .size(20.dp)
+                                .background(color = Color(0xFFFF4444), shape = CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (unreadCount > 9) "9+" else unreadCount.toString(),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 9.sp
+                                ),
+                                color = Color.White
+                            )
+                        }
                     }
                 }
             }
