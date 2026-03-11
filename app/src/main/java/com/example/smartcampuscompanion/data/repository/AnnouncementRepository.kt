@@ -21,7 +21,6 @@ class AnnouncementRepository(private val dao: AnnouncementDao) {
         dao.delete(announcement)
     }
 
-    // Only seeds data if the table is currently empty
     suspend fun insertIfEmpty(announcements: List<AnnouncementEntity>) {
         val current = dao.getAllAnnouncements().first()
         if (current.isEmpty()) {
