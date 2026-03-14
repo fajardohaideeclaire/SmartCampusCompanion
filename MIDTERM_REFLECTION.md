@@ -1,27 +1,35 @@
 # Midterm Reflection
 
 ## Git Workflow Challenges
-During development, we ensured that we pulled the latest updates from the develop branch before starting any new work. This helped minimize conflicts. However, we still encountered a merge conflict when multiple branches modified the same file. The conflict was resolved manually by reviewing the differences and carefully integrating both changes.
+During development, the team followed a feature branch workflow using GitHub. Each member worked on their assigned branch and regularly pulled the latest updates from the develop branch before starting new work to minimize conflicts.
+
+However, a merge conflict still occurred when multiple branches modified the same file, specifically AppNav.kt, where navigation routes were being updated. Because different branches edited the same section of the file, Git could not automatically merge the changes.
+
+The conflict was resolved manually by reviewing the differences and carefully integrating both navigation routes so that all features continued to function correctly.
 
 This experience improved our understanding of:
-- Branch synchronization
-- Pull Request review process
+- Branch synchronization using the develop branch
+- Pull Request review and integration
 - Manual conflict resolution in Git
+- Coordinating code changes across multiple feature branches
 
 ## Architecture and Technical Understanding
-Through implementing MVVM architecture, we learned the importance of separation of concerns:
-- The UI layer (Composable screens) handles presentation only.
-- The ViewModel manages business logic and state.
-- The Repository abstracts data operations.
-- Room Database handles local data persistence.
+The application follows the MVVM (Model–View–ViewModel) architecture, which separates the UI, business logic, and data management layers.
 
-Using StateFlow allowed us to observe real-time updates from the database and automatically reflect changes in the UI.
+Through implementing MVVM, we learned the importance of separation of concerns:
+- The UI layer (Jetpack Compose screens) handles presentation and user interaction.
+- The ViewModel layer manages application state and business logic using StateFlow.
+- The Repository layer abstracts data operations and provides a single source of truth for the ViewModels.
+- The Room Database layer handles local data persistence through entities and DAOs.
+
+Using StateFlow allows the UI to observe state changes from the ViewModel and automatically update when the underlying data changes.
 
 ## Key Lessons Learned
-- Always pull from develop before starting new work.
-- Make small, logical commits to track progress clearly.
-- Use feature branches to isolate development.
-- Ensure proper integration of Room entities and DAOs to avoid runtime crashes.
-- Test features thoroughly before creating a Pull Request.
+- Always pull from develop before starting new work to avoid outdated code.
+- Use feature branches to isolate development tasks.
+- Make small, clear commits to track progress and changes.
+- Ensure proper implementation of ViewModels to prevent state loss during recomposition.
+- Verify the integration of Room entities, DAOs, and repositories to maintain a stable data flow.
+- Test features before submitting Pull Requests for integration.
 
-Overall, this phase strengthened our understanding of structured Android app development using MVVM, Room, and Git-based collaboration.
+Overall, this phase strengthened our understanding of structured Android application development using MVVM architecture, Room database integration, and Git-based team collaboration.
