@@ -47,6 +47,7 @@ fun LoginScreen(navController: NavHostController) {
             .fillMaxSize()
             .background(gradient)
     ) {
+        // Decorative circles
         Box(
             modifier = Modifier
                 .size(220.dp)
@@ -228,18 +229,15 @@ fun LoginScreen(navController: NavHostController) {
                     Button(
                         onClick = {
                             when {
-                                // Step 1: AuthUtils checks if fields are valid
                                 !authUtils.isUsernameValid(username) -> {
                                     errorMessage = "Please enter a valid username"
                                 }
                                 !authUtils.isPasswordValid(password) -> {
                                     errorMessage = "Password must be at least 4 characters"
                                 }
-                                // Step 2: AuthUtils validates credentials
                                 !authUtils.validateLogin(username, password) -> {
                                     errorMessage = "Invalid username or password"
                                 }
-                                // Step 3: SessionManager saves session on success
                                 else -> {
                                     errorMessage = ""
                                     sessionManager.saveSession(username)
@@ -286,15 +284,6 @@ fun LoginScreen(navController: NavHostController) {
                     color = Color.White
                 )
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "Hint: admin / admin123",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0x99FFFFFF),
-                textAlign = TextAlign.Center
-            )
         }
     }
 }
