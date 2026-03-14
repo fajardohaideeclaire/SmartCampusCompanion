@@ -1,6 +1,7 @@
 package com.example.smartcampuscompanion.ui.announcement
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,7 +18,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.clickable
 import androidx.navigation.NavHostController
 import com.example.smartcampuscompanion.ui.theme.DarkGreen
 import com.example.smartcampuscompanion.ui.theme.MediumGreen
@@ -36,23 +36,15 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color(0xFFF6F8F7))
     ) {
-        // --- Gradient Header ---
-        Box(
+        // ── Header ───────────────────────────────────────────────────────────
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(gradient)
                 .padding(top = 52.dp, bottom = 28.dp, start = 24.dp, end = 24.dp)
         ) {
-            // Decorative circle
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .align(Alignment.TopEnd)
-                    .offset(x = 40.dp, y = -40.dp)
-                    .background(color = Color(0x1AFFFFFF), shape = CircleShape)
-            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -60,15 +52,15 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
                 Box(
                     modifier = Modifier
                         .size(42.dp)
-                        .background(color = Color(0x1AFFFFFF), shape = CircleShape)
+                        .background(Color(0x1AFFFFFF), CircleShape)
                         .clickable { navController.popBackStack() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.ArrowBack,
+                        Icons.Rounded.ArrowBack,
                         contentDescription = "Back",
                         tint = Color.White,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
@@ -88,9 +80,8 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
             }
         }
 
-        // --- Body ---
+        // ── Body ─────────────────────────────────────────────────────────────
         if (announcements.isEmpty()) {
-            // Empty state
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -101,11 +92,11 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
                 Box(
                     modifier = Modifier
                         .size(80.dp)
-                        .background(color = PaleGreen, shape = CircleShape),
+                        .background(PaleGreen, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Notifications,
+                        Icons.Rounded.Notifications,
                         contentDescription = null,
                         tint = MediumGreen,
                         modifier = Modifier.size(40.dp)
@@ -132,13 +123,9 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
                 contentPadding = PaddingValues(vertical = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // --- Unread Section ---
                 if (unread.isNotEmpty()) {
                     item {
-                        SectionLabel(
-                            text = "New",
-                            badge = unread.size
-                        )
+                        SectionLabel(text = "New", badge = unread.size)
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                     items(unread, key = { it.id }) { item ->
@@ -153,7 +140,6 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
                     }
                 }
 
-                // --- Read Section ---
                 if (read.isNotEmpty()) {
                     item {
                         Spacer(modifier = Modifier.height(8.dp))
@@ -188,7 +174,7 @@ private fun SectionLabel(text: String, badge: Int? = null) {
             Spacer(modifier = Modifier.width(8.dp))
             Box(
                 modifier = Modifier
-                    .background(color = MediumGreen, shape = CircleShape)
+                    .background(MediumGreen, RoundedCornerShape(50.dp))
                     .padding(horizontal = 8.dp, vertical = 2.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -213,12 +199,12 @@ private fun AnnouncementCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isRead) Color(0xFFF9F9F9) else Color.White
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isRead) 1.dp else 4.dp
+            defaultElevation = if (isRead) 0.dp else 2.dp
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -227,29 +213,28 @@ private fun AnnouncementCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Category tag
                 Box(
                     modifier = Modifier
                         .background(
-                            color = if (isRead) Color(0xFFEEEEEE) else PaleGreen,
-                            shape = RoundedCornerShape(8.dp)
+                            if (isRead) Color(0xFFEEEEEE) else PaleGreen,
+                            RoundedCornerShape(8.dp)
                         )
                         .padding(horizontal = 10.dp, vertical = 3.dp)
                 ) {
                     Text(
                         text = category,
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
                         color = if (isRead) Color(0xFF888888) else MediumGreen
                     )
                 }
-
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Unread dot indicator
                     if (!isRead) {
                         Box(
                             modifier = Modifier
-                                .size(8.dp)
-                                .background(color = MediumGreen, shape = CircleShape)
+                                .size(7.dp)
+                                .background(MediumGreen, CircleShape)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                     }
@@ -265,7 +250,7 @@ private fun AnnouncementCard(
 
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium.copy(
+                style = MaterialTheme.typography.titleSmall.copy(
                     fontWeight = if (isRead) FontWeight.Normal else FontWeight.SemiBold
                 ),
                 color = if (isRead) Color(0xFF666666) else DarkGreen

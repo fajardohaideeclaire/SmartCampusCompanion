@@ -3,7 +3,7 @@ package com.example.smartcampuscompanion
 class AuthUtils {
 
     fun validateLogin(username: String, password: String): Boolean {
-        return username == "admin" && password == "admin123"
+        return username == "student" && password == "1234"
     }
 
     fun isUsernameValid(username: String): Boolean {

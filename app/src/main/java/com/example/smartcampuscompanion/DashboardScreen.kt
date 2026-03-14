@@ -3,11 +3,15 @@ package com.example.smartcampuscompanion
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.LocationOn
+import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.*
@@ -17,7 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -25,246 +31,183 @@ import com.example.smartcampuscompanion.ui.theme.DarkGreen
 import com.example.smartcampuscompanion.ui.theme.MediumGreen
 import com.example.smartcampuscompanion.ui.theme.PaleGreen
 import com.example.smartcampuscompanion.viewmodel.AnnouncementViewModel
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun DashboardScreen(
     navController: NavHostController,
     announcementViewModel: AnnouncementViewModel
 ) {
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val username = sessionManager.getUsername()
+
     val announcements by announcementViewModel.announcements.collectAsState()
     val unreadCount = announcements.count { !it.isRead }
 
-    val gradient = Brush.linearGradient(
-        colors = listOf(DarkGreen, MediumGreen)
-    )
+    val greeting = remember {
+        when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+            in 0..11  -> "Good Morning"
+            in 12..17 -> "Good Afternoon"
+            else      -> "Good Evening"
+        }
+    }
+
+    val today = remember {
+        SimpleDateFormat("EEEE, MMM d", Locale.getDefault()).format(Date())
+    }
+
+    val gradient = Brush.linearGradient(colors = listOf(DarkGreen, MediumGreen))
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color(0xFFF6F8F7))
+            .verticalScroll(rememberScrollState())
     ) {
-        // Header
-        Box(
+
+        // ── Header ───────────────────────────────────────────────────────────
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(gradient)
-                .padding(top = 52.dp, bottom = 28.dp, start = 24.dp, end = 24.dp)
+                .padding(top = 52.dp, bottom = 32.dp, start = 24.dp, end = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .align(Alignment.TopEnd)
-                    .offset(x = 40.dp, y = -40.dp)
-                    .background(color = Color(0x1AFFFFFF), shape = CircleShape)
-            )
+            // Top bar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Greeting
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(46.dp)
-                            .background(color = Color(0x26FFFFFF), shape = CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Person,
-                            contentDescription = "Profile",
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(14.dp))
-                    Column {
-                        Text(
-                            text = "Good morning,",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xB3FFFFFF)
-                        )
-                        Text(
-                            text = "Student",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = Color.White
-                        )
-                    }
-                }
-
-                // Notification bell with unread badge
+                Icon(
+                    Icons.Rounded.Logout,
+                    contentDescription = "Logout",
+                    tint = Color(0xCCFFFFFF),
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clickable {
+                            sessionManager.clearSession()
+                            navController.navigate("login") {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                )
+                // Date label centered at top
+                Text(
+                    text = today,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Medium,
+                        letterSpacing = 0.3.sp
+                    ),
+                    color = Color(0xB3FFFFFF)
+                )
                 Box(
                     modifier = Modifier
-                        .size(42.dp)
+                        .size(28.dp)
                         .clickable { navController.navigate("announcements") },
                     contentAlignment = Alignment.Center
                 ) {
-                    // Bell background
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(color = Color(0x1AFFFFFF), shape = CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Notifications,
-                            contentDescription = "Notifications",
-                            tint = Color.White,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-
-                    // Unread count badge — only shown when unread > 0
+                    Icon(
+                        Icons.Rounded.Notifications,
+                        contentDescription = "Notifications",
+                        tint = Color(0xCCFFFFFF),
+                        modifier = Modifier.size(22.dp)
+                    )
                     if (unreadCount > 0) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .size(16.dp)
-                                .background(color = Color(0xFFFF4444), shape = CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = if (unreadCount > 9) "9+" else unreadCount.toString(),
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 8.sp
-                                ),
-                                color = Color.White
-                            )
-                        }
+                        BadgeBox(
+                            count = unreadCount,
+                            modifier = Modifier.align(Alignment.TopEnd)
+                        )
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Avatar
+            Box(
+                modifier = Modifier
+                    .size(68.dp)
+                    .background(Color(0x26FFFFFF), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Rounded.Person,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(36.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = greeting,
+                style = MaterialTheme.typography.bodySmall,
+                color = Color(0xB3FFFFFF),
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = username,
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
         }
 
-        // Body
+        // ── Body ─────────────────────────────────────────────────────────────
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
                 text = "Quick Access",
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                color = DarkGreen
+                color = DarkGreen,
+                modifier = Modifier.padding(bottom = 2.dp)
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Campus Information
-            DashboardCard(
+            // Campus row card
+            NavRowCard(
                 icon = Icons.Rounded.LocationOn,
                 title = "Campus Information",
-                subtitle = "Explore colleges, facilities & more",
+                subtitle = "Colleges, departments & facilities",
                 onClick = { navController.navigate("campus") }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
+            // Tasks + Announcements tiles
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Tasks card
-                Card(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { navController.navigate("tasks") },
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(18.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .background(color = PaleGreen, shape = RoundedCornerShape(14.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.CheckCircle,
-                                contentDescription = "Tasks",
-                                tint = MediumGreen,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Tasks",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                            color = DarkGreen
-                        )
-                        Text(
-                            text = "Manage schedule",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF888888)
-                        )
-                    }
-                }
+                NavTileCard(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Rounded.CheckCircle,
+                    title = "Tasks",
+                    subtitle = "My schedule",
+                    onClick = { navController.navigate("tasks") }
+                )
 
-                // Announcements card with unread badge
                 Box(modifier = Modifier.weight(1f)) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { navController.navigate("announcements") },
-                        shape = RoundedCornerShape(18.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(18.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .background(color = PaleGreen, shape = RoundedCornerShape(14.dp)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Notifications,
-                                    contentDescription = "Announcements",
-                                    tint = MediumGreen,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                text = "Announcements",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                                color = DarkGreen
-                            )
-                            Text(
-                                text = if (unreadCount > 0) "$unreadCount unread" else "All read",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = if (unreadCount > 0) MediumGreen else Color(0xFF888888)
-                            )
-                        }
-                    }
-
-                    // Badge on the card
+                    NavTileCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        icon = Icons.Rounded.Notifications,
+                        title = "Announcements",
+                        subtitle = if (unreadCount > 0) "$unreadCount unread" else "All read",
+                        subtitleColor = if (unreadCount > 0) MediumGreen else Color(0xFF9E9E9E),
+                        onClick = { navController.navigate("announcements") }
+                    )
                     if (unreadCount > 0) {
-                        Box(
+                        BadgeBox(
+                            count = unreadCount,
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
-                                .padding(top = 6.dp, end = 6.dp)
-                                .size(20.dp)
-                                .background(color = Color(0xFFFF4444), shape = CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = if (unreadCount > 9) "9+" else unreadCount.toString(),
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 9.sp
-                                ),
-                                color = Color.White
-                            )
-                        }
+                                .padding(top = 8.dp, end = 8.dp)
+                        )
                     }
                 }
             }
@@ -272,8 +215,33 @@ fun DashboardScreen(
     }
 }
 
+// ── Badge ─────────────────────────────────────────────────────────────────────
+
 @Composable
-private fun DashboardCard(
+private fun BadgeBox(count: Int, modifier: Modifier = Modifier) {
+    val label = if (count > 9) "9+" else count.toString()
+    val width = if (count > 9) 26.dp else 18.dp
+    Box(
+        modifier = modifier
+            .width(width)
+            .height(18.dp)
+            .background(Color(0xFFE53935), RoundedCornerShape(9.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+// ── Row card ──────────────────────────────────────────────────────────────────
+
+@Composable
+private fun NavRowCard(
     icon: ImageVector,
     title: String,
     subtitle: String,
@@ -285,7 +253,7 @@ private fun DashboardCard(
             .clickable { onClick() },
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
@@ -295,30 +263,95 @@ private fun DashboardCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(52.dp)
-                    .background(color = PaleGreen, shape = RoundedCornerShape(14.dp)),
+                    .size(46.dp)
+                    .background(PaleGreen, RoundedCornerShape(13.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = icon,
-                    contentDescription = title,
+                    icon,
+                    contentDescription = null,
                     tint = MediumGreen,
-                    modifier = Modifier.size(26.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
                     color = DarkGreen
                 )
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF888888)
+                    color = Color(0xFF9E9E9E)
                 )
             }
+            Icon(
+                Icons.Rounded.KeyboardArrowRight,
+                contentDescription = null,
+                tint = Color(0xFFBDBDBD),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+// ── Tile card — centered text ─────────────────────────────────────────────────
+
+@Composable
+private fun NavTileCard(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    subtitleColor: Color = Color(0xFF9E9E9E),
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier.clickable { onClick() },
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .background(PaleGreen, RoundedCornerShape(13.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = MediumGreen,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(14.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
+                color = DarkGreen,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(3.dp))
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = subtitleColor,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
