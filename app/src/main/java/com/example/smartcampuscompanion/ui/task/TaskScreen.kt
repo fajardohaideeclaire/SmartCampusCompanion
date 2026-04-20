@@ -20,8 +20,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.smartcampuscompanion.data.local.TaskEntity
+import com.example.smartcampuscompanion.ui.theme.MediumGreen // Added for the progress indicator color
 import com.example.smartcampuscompanion.viewmodel.TaskViewModel
 import java.util.Calendar
+// Added Import
+import androidx.compose.material3.LinearProgressIndicator
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -182,6 +185,17 @@ fun TaskScreen(viewModel: TaskViewModel, navController: NavHostController) {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            // UI Placeholder for Loading Indicator
+            // Replace 'false' with 'isLoading' once Dacillo updates the TaskViewModel
+            if (false) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MediumGreen,
+                    trackColor = Color(0xFFCCCCCC)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
             if (tasks.isEmpty()) {
                 // Better empty state
