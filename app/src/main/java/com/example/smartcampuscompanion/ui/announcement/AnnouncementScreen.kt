@@ -1,6 +1,7 @@
 package com.example.smartcampuscompanion.ui.announcement
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,16 +18,20 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.clickable
 import androidx.navigation.NavHostController
 import com.example.smartcampuscompanion.ui.theme.DarkGreen
 import com.example.smartcampuscompanion.ui.theme.MediumGreen
 import com.example.smartcampuscompanion.ui.theme.PaleGreen
 import com.example.smartcampuscompanion.viewmodel.AnnouncementViewModel
+// Added Imports
+import androidx.compose.material3.LinearProgressIndicator
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostController) {
     val announcements by viewModel.announcements.collectAsState()
+    // Added isLoading state
+    val isLoading by viewModel.isLoading.collectAsState()
 
     val unread = announcements.filter { !it.isRead }
     val read = announcements.filter { it.isRead }
@@ -88,9 +93,18 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
             }
         }
 
+        // Added Loading Indicator Logic
+        if (isLoading) {
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth(),
+                color = MediumGreen,
+                trackColor = Color(0xFFCCCCCC)
+            )
+        }
+
         // --- Body ---
-        if (announcements.isEmpty()) {
-            // Empty state
+        if (announcements.isEmpty() && !isLoading) {
+            // Empty state (only shows if not loading)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
