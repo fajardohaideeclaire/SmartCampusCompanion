@@ -11,6 +11,7 @@ data class AnnouncementEntity(
     val content: String,
     val date: String,
     val category: String = "General",
-    val isRead: Boolean = false
+    val isRead: Boolean = false,
+    // Stores the Firestore document ID so we can sync read status back
+    val firestoreId: String = ""
 )
-
