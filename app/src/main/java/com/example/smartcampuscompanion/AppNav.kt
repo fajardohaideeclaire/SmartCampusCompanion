@@ -22,8 +22,10 @@ fun AppNav(navController: NavHostController) {
     val context = LocalContext.current
     val database = AppDatabase.getDatabase(context)
 
-    // announcementViewModel is created here at the AppNav composable level
-    // which IS a valid composable scope — viewModel() works here
+    // Check session on app start — skip login if already logged in
+    val sessionManager = remember { SessionManager(context) }
+    val startDestination = if (sessionManager.isLoggedIn()) "dashboard" else "login"
+
     val announcementRepository = remember {
         AnnouncementRepository(database.announcementDao())
     }
@@ -31,7 +33,7 @@ fun AppNav(navController: NavHostController) {
         factory = AnnouncementViewModelFactory(announcementRepository)
     )
 
-    NavHost(navController, startDestination = "login") {
+    NavHost(navController, startDestination = startDestination) {
         composable("login") {
             LoginScreen(navController)
         }

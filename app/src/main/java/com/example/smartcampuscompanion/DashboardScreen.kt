@@ -167,7 +167,7 @@ fun DashboardScreen(
             )
         }
 
-        // Body
+        // ── Body ─────────────────────────────────────────────────────────────
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -237,6 +237,8 @@ fun DashboardScreen(
         }
     }
 }
+
+// ── Badge ─────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun BadgeBox(count: Int, modifier: Modifier = Modifier) {
