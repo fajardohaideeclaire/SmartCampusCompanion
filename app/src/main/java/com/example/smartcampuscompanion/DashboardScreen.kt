@@ -14,6 +14,7 @@ import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,9 +42,12 @@ fun DashboardScreen(
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
+    val authUtils = remember { AuthUtils() }
     val username = sessionManager.getUsername()
+    val role = sessionManager.getRole()
 
     val announcements by announcementViewModel.announcements.collectAsState()
+    val isLoading by announcementViewModel.isLoading.collectAsState()
     val unreadCount = announcements.count { !it.isRead }
 
     val greeting = remember {
@@ -66,8 +70,7 @@ fun DashboardScreen(
             .background(Color(0xFFF6F8F7))
             .verticalScroll(rememberScrollState())
     ) {
-
-        // ── Header ───────────────────────────────────────────────────────────
+        // Header
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -75,7 +78,6 @@ fun DashboardScreen(
                 .padding(top = 52.dp, bottom = 32.dp, start = 24.dp, end = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Top bar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -88,13 +90,13 @@ fun DashboardScreen(
                     modifier = Modifier
                         .size(22.dp)
                         .clickable {
+                            authUtils.signOut()
                             sessionManager.clearSession()
                             navController.navigate("login") {
                                 popUpTo(0) { inclusive = true }
                             }
                         }
                 )
-                // Date label centered at top
                 Text(
                     text = today,
                     style = MaterialTheme.typography.labelSmall.copy(
@@ -124,12 +126,11 @@ fun DashboardScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Avatar
             Box(
                 modifier = Modifier
-                    .size(68.dp)
+                    .size(64.dp)
                     .background(Color(0x26FFFFFF), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
@@ -137,11 +138,11 @@ fun DashboardScreen(
                     Icons.Rounded.Person,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(34.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Text(
                 text = greeting,
@@ -154,6 +155,15 @@ fun DashboardScreen(
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = Color.White,
                 textAlign = TextAlign.Center
+            )
+        }
+
+        // Loading indicator for Firestore sync
+        if (isLoading) {
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth(),
+                color = MediumGreen,
+                trackColor = Color(0xFFCCCCCC)
             )
         }
 
@@ -171,7 +181,6 @@ fun DashboardScreen(
                 modifier = Modifier.padding(bottom = 2.dp)
             )
 
-            // Campus row card
             NavRowCard(
                 icon = Icons.Rounded.LocationOn,
                 title = "Campus Information",
@@ -179,7 +188,6 @@ fun DashboardScreen(
                 onClick = { navController.navigate("campus") }
             )
 
-            // Tasks + Announcements tiles
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -191,7 +199,6 @@ fun DashboardScreen(
                     subtitle = "My schedule",
                     onClick = { navController.navigate("tasks") }
                 )
-
                 Box(modifier = Modifier.weight(1f)) {
                     NavTileCard(
                         modifier = Modifier.fillMaxWidth(),
@@ -211,6 +218,22 @@ fun DashboardScreen(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "More",
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                color = DarkGreen,
+                modifier = Modifier.padding(bottom = 2.dp)
+            )
+
+            NavRowCard(
+                icon = Icons.Rounded.Settings,
+                title = "Settings",
+                subtitle = "Personalize your experience",
+                onClick = { navController.navigate("settings") }
+            )
         }
     }
 }
@@ -237,8 +260,6 @@ private fun BadgeBox(count: Int, modifier: Modifier = Modifier) {
         )
     }
 }
-
-// ── Row card ──────────────────────────────────────────────────────────────────
 
 @Composable
 private fun NavRowCard(
@@ -267,20 +288,13 @@ private fun NavRowCard(
                     .background(PaleGreen, RoundedCornerShape(13.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    icon,
-                    contentDescription = null,
-                    tint = MediumGreen,
-                    modifier = Modifier.size(22.dp)
-                )
+                Icon(icon, null, tint = MediumGreen, modifier = Modifier.size(22.dp))
             }
             Spacer(modifier = Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                     color = DarkGreen
                 )
                 Spacer(modifier = Modifier.height(2.dp))
@@ -292,15 +306,13 @@ private fun NavRowCard(
             }
             Icon(
                 Icons.Rounded.KeyboardArrowRight,
-                contentDescription = null,
+                null,
                 tint = Color(0xFFBDBDBD),
                 modifier = Modifier.size(20.dp)
             )
         }
     }
 }
-
-// ── Tile card — centered text ─────────────────────────────────────────────────
 
 @Composable
 private fun NavTileCard(
@@ -329,19 +341,12 @@ private fun NavTileCard(
                     .background(PaleGreen, RoundedCornerShape(13.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    icon,
-                    contentDescription = null,
-                    tint = MediumGreen,
-                    modifier = Modifier.size(22.dp)
-                )
+                Icon(icon, null, tint = MediumGreen, modifier = Modifier.size(22.dp))
             }
             Spacer(modifier = Modifier.height(14.dp))
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleSmall.copy(
-                    fontWeight = FontWeight.SemiBold
-                ),
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                 color = DarkGreen,
                 textAlign = TextAlign.Center
             )
@@ -355,3 +360,4 @@ private fun NavTileCard(
         }
     }
 }
+

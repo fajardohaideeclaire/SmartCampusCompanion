@@ -27,11 +27,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.smartcampuscompanion.data.local.TaskEntity
-import com.example.smartcampuscompanion.ui.theme.DarkGreen
-import com.example.smartcampuscompanion.ui.theme.MediumGreen
-import com.example.smartcampuscompanion.ui.theme.PaleGreen
+import com.example.smartcampuscompanion.ui.theme.MediumGreen // Added for the progress indicator color
 import com.example.smartcampuscompanion.viewmodel.TaskViewModel
 import java.util.Calendar
+// Added Import
+import androidx.compose.material3.LinearProgressIndicator
 
 @Composable
 fun TaskScreen(viewModel: TaskViewModel, navController: NavHostController) {
@@ -298,9 +298,34 @@ fun TaskScreen(viewModel: TaskViewModel, navController: NavHostController) {
                 }
             }
 
-            // ── Task section label ───────────────────────────────────────────
-            if (tasks.isNotEmpty()) {
-                item {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // UI Placeholder for Loading Indicator
+            // Replace 'false' with 'isLoading' once Dacillo updates the TaskViewModel
+            if (false) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MediumGreen,
+                    trackColor = Color(0xFFCCCCCC)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            if (tasks.isEmpty()) {
+                // Better empty state
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 48.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.CheckCircle,
+                        contentDescription = null,
+                        tint = Color(0xFFCCCCCC),
+                        modifier = Modifier.size(64.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = "My Tasks",
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
