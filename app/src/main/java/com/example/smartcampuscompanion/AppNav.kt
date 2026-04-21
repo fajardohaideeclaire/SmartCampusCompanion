@@ -8,37 +8,52 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.compose.ui.platform.LocalContext
 import com.example.smartcampuscompanion.data.local.AppDatabase
-import com.example.smartcampuscompanion.data.repository.TaskRepository
 import com.example.smartcampuscompanion.data.repository.AnnouncementRepository
-import com.example.smartcampuscompanion.viewmodel.TaskViewModel
-import com.example.smartcampuscompanion.viewmodel.TaskViewModelFactory
+import com.example.smartcampuscompanion.data.repository.TaskRepository
+import com.example.smartcampuscompanion.firebase.FirebaseService
 import com.example.smartcampuscompanion.viewmodel.AnnouncementViewModel
 import com.example.smartcampuscompanion.viewmodel.AnnouncementViewModelFactory
-import com.example.smartcampuscompanion.ui.task.TaskScreen
+import com.example.smartcampuscompanion.viewmodel.TaskViewModel
+import com.example.smartcampuscompanion.viewmodel.TaskViewModelFactory
 import com.example.smartcampuscompanion.ui.announcement.AnnouncementScreen
+import com.example.smartcampuscompanion.ui.task.TaskScreen
 
 @Composable
 fun AppNav(navController: NavHostController) {
     val context = LocalContext.current
     val database = AppDatabase.getDatabase(context)
-
-    // Check session on app start — skip login if already logged in
     val sessionManager = remember { SessionManager(context) }
-    val startDestination = if (sessionManager.isLoggedIn()) "dashboard" else "login"
 
+    // Role-based start destination
+    val startDestination = when {
+        !sessionManager.isLoggedIn()                   -> "login"
+        sessionManager.getRole() == UserRole.ADMIN     -> "admin"
+        else                                            -> "dashboard"
+    }
+
+    // Shared AnnouncementViewModel — used by Dashboard, AnnouncementScreen, and AdminScreen
     val announcementRepository = remember {
-        AnnouncementRepository(database.announcementDao())
+        AnnouncementRepository(
+            dao = database.announcementDao(),
+            firebaseService = FirebaseService()
+        )
     }
     val announcementViewModel: AnnouncementViewModel = viewModel(
         factory = AnnouncementViewModelFactory(announcementRepository)
     )
 
-    NavHost(navController, startDestination = startDestination) {
+    NavHost(navController = navController, startDestination = startDestination) {
         composable("login") {
             LoginScreen(navController)
         }
         composable("dashboard") {
             DashboardScreen(
+                navController = navController,
+                announcementViewModel = announcementViewModel
+            )
+        }
+        composable("admin") {
+            AdminScreen(
                 navController = navController,
                 announcementViewModel = announcementViewModel
             )
@@ -57,6 +72,9 @@ fun AppNav(navController: NavHostController) {
         }
         composable("announcements") {
             AnnouncementScreen(announcementViewModel, navController)
+        }
+        composable("settings") {
+            SettingsScreen(navController)
         }
     }
 }
