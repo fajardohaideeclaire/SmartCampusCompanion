@@ -5,7 +5,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.smartcampuscompanion.data.local.AnnouncementEntity
 import com.example.smartcampuscompanion.data.repository.AnnouncementRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -13,50 +16,38 @@ class AnnouncementViewModel(
     private val repository: AnnouncementRepository
 ) : ViewModel() {
 
+    // Firestore real-time announcements (with Room cache fallback)
     val announcements = repository.announcements
+        .catch { emit(emptyList()) }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             emptyList()
         )
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
+
+    private val _postSuccess = MutableStateFlow(false)
+    val postSuccess: StateFlow<Boolean> = _postSuccess
+
     init {
-        seedSampleAnnouncements()
+        seedLocalFallback()
     }
 
-    private fun seedSampleAnnouncements() {
+    // Only seeds Room if completely empty — fallback for offline use
+    private fun seedLocalFallback() {
         viewModelScope.launch {
             repository.insertIfEmpty(
                 listOf(
                     AnnouncementEntity(
-                        title = "Midterm Examinations Schedule",
-                        content = "Midterm examinations will begin next week. Please check your respective college bulletin boards for the full schedule and room assignments.",
-                        date = "2026-03-01",
-                        category = "Academic"
-                    ),
-                    AnnouncementEntity(
-                        title = "System Maintenance Advisory",
-                        content = "The student portal will be unavailable this Saturday, 12MN–6AM, due to scheduled system maintenance. Please complete any online transactions before then.",
-                        date = "2026-03-05",
-                        category = "Advisory"
-                    ),
-                    AnnouncementEntity(
-                        title = "Library Extended Hours",
-                        content = "The campus library will be open 24/7 starting next week through the end of midterm examinations to support student review sessions.",
-                        date = "2026-03-06",
-                        category = "Facilities"
-                    ),
-                    AnnouncementEntity(
-                        title = "Campus Foundation Day Celebration",
-                        content = "Join us for our annual Foundation Day celebration on March 15. Activities include a program, cultural presentations, and a food fair. All students are encouraged to attend.",
-                        date = "2026-03-08",
-                        category = "Events"
-                    ),
-                    AnnouncementEntity(
-                        title = "Scholarship Application Open",
-                        content = "Applications for the Academic Excellence Scholarship for the second semester are now open. Submit your requirements to the Scholarship Office by March 20.",
-                        date = "2026-03-09",
-                        category = "Academic"
+                        title = "Welcome to Smart Campus",
+                        content = "This is a local fallback announcement. Connect to the internet to see live announcements from Firestore.",
+                        date = "2026-04-01",
+                        category = "General"
                     )
                 )
             )
@@ -68,6 +59,37 @@ class AnnouncementViewModel(
             repository.update(announcement.copy(isRead = true))
         }
     }
+
+    // Admin posts a new announcement to Firestore
+    fun postAnnouncement(
+        title: String,
+        content: String,
+        category: String,
+        postedBy: String
+    ) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            _postSuccess.value = false
+
+            val success = repository.postAnnouncement(
+                title = title,
+                content = content,
+                category = category,
+                postedBy = postedBy
+            )
+
+            if (success) {
+                _postSuccess.value = true
+            } else {
+                _errorMessage.value = "Failed to post announcement. Check your connection."
+            }
+            _isLoading.value = false
+        }
+    }
+
+    fun clearError() { _errorMessage.value = null }
+    fun clearPostSuccess() { _postSuccess.value = false }
 }
 
 class AnnouncementViewModelFactory(
