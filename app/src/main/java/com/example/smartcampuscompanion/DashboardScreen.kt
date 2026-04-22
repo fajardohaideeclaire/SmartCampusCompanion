@@ -43,8 +43,11 @@ fun DashboardScreen(
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
     val authUtils = remember { AuthUtils() }
-    val username = sessionManager.getUsername()
-    val role = sessionManager.getRole()
+
+    val email = sessionManager.getUsername()
+    // Show just the part before @ e.g. "student" instead of "student@campus.edu"
+    val displayName = email.substringBefore("@")
+        .replaceFirstChar { it.uppercase() }
 
     val announcements by announcementViewModel.announcements.collectAsState()
     val isLoading by announcementViewModel.isLoading.collectAsState()
@@ -67,7 +70,7 @@ fun DashboardScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF6F8F7))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
     ) {
         // Header
@@ -134,11 +137,13 @@ fun DashboardScreen(
                     .background(Color(0x26FFFFFF), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Rounded.Person,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(34.dp)
+                // Show first letter of display name as avatar
+                Text(
+                    text = displayName.take(1),
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = Color.White
                 )
             }
 
@@ -151,23 +156,23 @@ fun DashboardScreen(
                 textAlign = TextAlign.Center
             )
             Text(
-                text = username,
+                text = displayName,
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
         }
 
-        // Loading indicator for Firestore sync
+        // Loading indicator
         if (isLoading) {
             LinearProgressIndicator(
                 modifier = Modifier.fillMaxWidth(),
                 color = MediumGreen,
-                trackColor = Color(0xFFCCCCCC)
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
         }
 
-        // ── Body ─────────────────────────────────────────────────────────────
+        // Body
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -205,7 +210,8 @@ fun DashboardScreen(
                         icon = Icons.Rounded.Notifications,
                         title = "Announcements",
                         subtitle = if (unreadCount > 0) "$unreadCount unread" else "All read",
-                        subtitleColor = if (unreadCount > 0) MediumGreen else Color(0xFF9E9E9E),
+                        subtitleColor = if (unreadCount > 0) MediumGreen
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
                         onClick = { navController.navigate("announcements") }
                     )
                     if (unreadCount > 0) {
@@ -237,8 +243,6 @@ fun DashboardScreen(
         }
     }
 }
-
-// ── Badge ─────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun BadgeBox(count: Int, modifier: Modifier = Modifier) {
@@ -273,7 +277,9 @@ private fun NavRowCard(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -295,19 +301,19 @@ private fun NavRowCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                    color = DarkGreen
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF9E9E9E)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Icon(
                 Icons.Rounded.KeyboardArrowRight,
                 null,
-                tint = Color(0xFFBDBDBD),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -326,7 +332,9 @@ private fun NavTileCard(
     Card(
         modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -347,7 +355,7 @@ private fun NavTileCard(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = DarkGreen,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(3.dp))
@@ -360,4 +368,3 @@ private fun NavTileCard(
         }
     }
 }
-
