@@ -19,19 +19,21 @@ import com.example.smartcampuscompanion.ui.announcement.AnnouncementScreen
 import com.example.smartcampuscompanion.ui.task.TaskScreen
 
 @Composable
-fun AppNav(navController: NavHostController) {
+fun AppNav(
+    navController: NavHostController,
+    isDarkMode: Boolean,
+    onDarkModeToggle: (Boolean) -> Unit
+) {
     val context = LocalContext.current
     val database = AppDatabase.getDatabase(context)
     val sessionManager = remember { SessionManager(context) }
 
-    // Role-based start destination
     val startDestination = when {
-        !sessionManager.isLoggedIn()                   -> "login"
-        sessionManager.getRole() == UserRole.ADMIN     -> "admin"
-        else                                            -> "dashboard"
+        !sessionManager.isLoggedIn()               -> "login"
+        sessionManager.getRole() == UserRole.ADMIN -> "admin"
+        else                                        -> "dashboard"
     }
 
-    // Shared AnnouncementViewModel — used by Dashboard, AnnouncementScreen, and AdminScreen
     val announcementRepository = remember {
         AnnouncementRepository(
             dao = database.announcementDao(),
@@ -62,9 +64,7 @@ fun AppNav(navController: NavHostController) {
             CampusInfoScreen(navController)
         }
         composable("tasks") {
-            val taskRepository = remember {
-                TaskRepository(database.taskDao())
-            }
+            val taskRepository = remember { TaskRepository(database.taskDao()) }
             val taskViewModel: TaskViewModel = viewModel(
                 factory = TaskViewModelFactory(taskRepository)
             )
@@ -74,7 +74,14 @@ fun AppNav(navController: NavHostController) {
             AnnouncementScreen(announcementViewModel, navController)
         }
         composable("settings") {
-            SettingsScreen(navController)
+            SettingsScreen(
+                navController = navController,
+                isDarkMode = isDarkMode,
+                onDarkModeToggle = onDarkModeToggle
+            )
+        }
+        composable("profile") {
+            ProfileScreen(navController)
         }
     }
 }
