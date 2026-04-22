@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Notifications
@@ -28,6 +29,7 @@ import com.example.smartcampuscompanion.ui.theme.MediumGreen
 import com.example.smartcampuscompanion.ui.theme.PaleGreen
 import com.example.smartcampuscompanion.viewmodel.AnnouncementViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminScreen(
     navController: NavHostController,
@@ -44,6 +46,7 @@ fun AdminScreen(
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("General") }
+    var categoryDropdownExpanded by remember { mutableStateOf(false) }
     var titleError by remember { mutableStateOf("") }
     var contentError by remember { mutableStateOf("") }
     var showSuccessDialog by remember { mutableStateOf(false) }
@@ -51,7 +54,6 @@ fun AdminScreen(
     val categories = listOf("General", "Academic", "Advisory", "Events", "Facilities")
     val gradient = Brush.linearGradient(colors = listOf(DarkGreen, MediumGreen))
 
-    // Show success dialog when post succeeds
     LaunchedEffect(postSuccess) {
         if (postSuccess) {
             showSuccessDialog = true
@@ -62,7 +64,7 @@ fun AdminScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF6F8F7))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
     ) {
         // Header
@@ -78,11 +80,10 @@ fun AdminScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Admin badge
                 Box(
                     modifier = Modifier
                         .background(Color(0x26FFFFFF), RoundedCornerShape(50.dp))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                        .padding(horizontal = 12.dp, vertical = 5.dp)
                 ) {
                     Text(
                         text = "ADMIN",
@@ -93,8 +94,6 @@ fun AdminScreen(
                         color = Color.White
                     )
                 }
-
-                // Logout
                 Icon(
                     Icons.Rounded.Logout,
                     contentDescription = "Logout",
@@ -150,19 +149,20 @@ fun AdminScreen(
                 .padding(horizontal = 20.dp, vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+
             // Post Announcement card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
                         text = "Post New Announcement",
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                         color = DarkGreen
                     )
 
@@ -179,15 +179,16 @@ fun AdminScreen(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MediumGreen,
                             focusedLabelColor = MediumGreen,
-                            focusedTextColor = DarkGreen,
-                            unfocusedTextColor = DarkGreen
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
                     if (titleError.isNotEmpty()) {
                         Text(
                             text = titleError,
                             color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(start = 4.dp, top = 4.dp)
                         )
                     }
 
@@ -207,61 +208,96 @@ fun AdminScreen(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MediumGreen,
                             focusedLabelColor = MediumGreen,
-                            focusedTextColor = DarkGreen,
-                            unfocusedTextColor = DarkGreen
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
                     if (contentError.isNotEmpty()) {
                         Text(
                             text = contentError,
                             color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(start = 4.dp, top = 4.dp)
                         )
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Category selector
-                    Text(
-                        text = "Category",
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = DarkGreen
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        categories.forEach { category ->
-                            FilterChip(
-                                selected = selectedCategory == category,
-                                onClick = { selectedCategory = category },
-                                label = {
-                                    Text(
-                                        text = category,
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MediumGreen,
-                                    selectedLabelColor = Color.White
-                                )
-                            )
-                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Error from ViewModel
+                    // Category dropdown
+                    Text(
+                        text = "Category",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = DarkGreen
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    ExposedDropdownMenuBox(
+                        expanded = categoryDropdownExpanded,
+                        onExpandedChange = { categoryDropdownExpanded = !categoryDropdownExpanded }
+                    ) {
+                        OutlinedTextField(
+                            value = selectedCategory,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Select Category") },
+                            trailingIcon = {
+                                Icon(
+                                    Icons.Rounded.ArrowDropDown,
+                                    contentDescription = null,
+                                    tint = MediumGreen
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MediumGreen,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                focusedLabelColor = MediumGreen,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+                        ExposedDropdownMenu(
+                            expanded = categoryDropdownExpanded,
+                            onDismissRequest = { categoryDropdownExpanded = false }
+                        ) {
+                            categories.forEach { category ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = category,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = if (selectedCategory == category)
+                                                MediumGreen
+                                            else
+                                                MaterialTheme.colorScheme.onSurface
+                                        )
+                                    },
+                                    onClick = {
+                                        selectedCategory = category
+                                        categoryDropdownExpanded = false
+                                    },
+                                    modifier = if (selectedCategory == category)
+                                        Modifier.background(PaleGreen)
+                                    else
+                                        Modifier
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Error message
                     if (errorMessage != null) {
                         Text(
                             text = errorMessage!!,
                             color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
                     }
 
                     // Post button
@@ -287,7 +323,7 @@ fun AdminScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp),
+                            .height(52.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MediumGreen,
@@ -302,22 +338,21 @@ fun AdminScreen(
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text(
-                                "Post Announcement",
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            Text("Post Announcement", fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
             }
 
-            // View announcements button
+            // View announcements card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { navController.navigate("announcements") },
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Row(
@@ -346,12 +381,12 @@ fun AdminScreen(
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.SemiBold
                             ),
-                            color = DarkGreen
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "See what students are reading",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF9E9E9E)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -378,7 +413,7 @@ fun AdminScreen(
             },
             title = { Text("Announcement Posted!") },
             text = {
-                Text("Your announcement has been posted to Firestore and is now visible to all students.")
+                Text("Your announcement has been posted and is now visible to all students.")
             },
             confirmButton = {
                 TextButton(
