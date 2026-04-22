@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.*
@@ -29,16 +30,19 @@ import com.example.smartcampuscompanion.ui.theme.MediumGreen
 import com.example.smartcampuscompanion.ui.theme.PaleGreen
 
 @Composable
-fun SettingsScreen(navController: NavHostController) {
+fun SettingsScreen(
+    navController: NavHostController,
+    isDarkMode: Boolean,
+    onDarkModeToggle: (Boolean) -> Unit
+) {
     var notificationsEnabled by remember { mutableStateOf(true) }
-    var darkModeEnabled by remember { mutableStateOf(false) }
 
     val gradient = Brush.linearGradient(colors = listOf(DarkGreen, MediumGreen))
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF6F8F7))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Header
         Column(
@@ -89,12 +93,13 @@ fun SettingsScreen(navController: NavHostController) {
             SettingsSectionLabel("Appearance")
             Spacer(modifier = Modifier.height(4.dp))
 
+            // Dark mode — now actually works
             SettingsToggleItem(
                 icon = Icons.Rounded.DarkMode,
                 title = "Dark Mode",
-                subtitle = "Switch to dark theme (coming soon)",
-                checked = darkModeEnabled,
-                onCheckedChange = { darkModeEnabled = it }
+                subtitle = if (isDarkMode) "Dark theme is on" else "Light theme is on",
+                checked = isDarkMode,
+                onCheckedChange = { onDarkModeToggle(it) }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -113,10 +118,12 @@ fun SettingsScreen(navController: NavHostController) {
             SettingsSectionLabel("Account")
             Spacer(modifier = Modifier.height(4.dp))
 
+            // Profile — navigates to ProfileScreen
             SettingsClickItem(
                 icon = Icons.Rounded.Person,
                 title = "Profile",
-                subtitle = "View your account information"
+                subtitle = "View your account information",
+                onClick = { navController.navigate("profile") }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -126,7 +133,8 @@ fun SettingsScreen(navController: NavHostController) {
             SettingsClickItem(
                 icon = Icons.Rounded.Info,
                 title = "About Smart Campus",
-                subtitle = "Version 2.0 — Finals Release"
+                subtitle = "Version 2.0 — Finals Release",
+                onClick = {}
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -142,7 +150,7 @@ private fun SettingsSectionLabel(text: String) {
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.2.sp
         ),
-        color = Color(0xFF999999),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(start = 4.dp)
     )
 }
@@ -158,7 +166,9 @@ private fun SettingsToggleItem(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -179,15 +189,13 @@ private fun SettingsToggleItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    color = DarkGreen
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF999999)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Switch(
@@ -197,7 +205,7 @@ private fun SettingsToggleItem(
                     checkedThumbColor = Color.White,
                     checkedTrackColor = MediumGreen,
                     uncheckedThumbColor = Color.White,
-                    uncheckedTrackColor = Color(0xFFCCCCCC)
+                    uncheckedTrackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                 )
             )
         }
@@ -208,14 +216,17 @@ private fun SettingsToggleItem(
 private fun SettingsClickItem(
     icon: ImageVector,
     title: String,
-    subtitle: String
+    subtitle: String,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { },
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -236,18 +247,21 @@ private fun SettingsClickItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    color = DarkGreen
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF999999)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+            Icon(
+                Icons.Rounded.KeyboardArrowRight,
+                null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
-
