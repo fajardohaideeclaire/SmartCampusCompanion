@@ -33,12 +33,16 @@ class AnnouncementRepository(
 
         firestoreList.forEach { firestoreItem ->
             if (firestoreItem.firestoreId !in existingFirestoreIds) {
-                dao.insert(firestoreItem)
+                // New announcement: Add to local DB (defaults to isRead = false)
+                dao.insert(firestoreItem.copy(isRead = false))
             } else {
-                // Update isRead status if changed
+                // Existing announcement: Update content but KEEP the local isRead status
                 val local = existing.find { it.firestoreId == firestoreItem.firestoreId }
-                if (local != null && local.isRead != firestoreItem.isRead) {
-                    dao.update(local.copy(isRead = firestoreItem.isRead))
+                if (local != null) {
+                    dao.update(firestoreItem.copy(
+                        id = local.id, 
+                        isRead = local.isRead // This is the key fix
+                    ))
                 }
             }
         }
@@ -49,11 +53,8 @@ class AnnouncementRepository(
     }
 
     suspend fun update(announcement: AnnouncementEntity) {
+        // Only update the local Room database
         dao.update(announcement)
-        // Also sync read status to Firestore
-        if (announcement.firestoreId.isNotEmpty()) {
-            firebaseService.markAsRead(announcement.firestoreId)
-        }
     }
 
     suspend fun updateAnnouncement(
