@@ -143,7 +143,7 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
                         SectionLabel(text = "New", badge = unread.size)
                         Spacer(modifier = Modifier.height(8.dp))
                     }
-                    items(unread, key = { it.id }) { item ->
+                    items(unread, key = { it.firestoreId.ifEmpty { it.title } }) { item ->
                         AnnouncementCard(
                             title = item.title,
                             content = item.content,
@@ -161,7 +161,7 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
                         SectionLabel(text = "Earlier")
                         Spacer(modifier = Modifier.height(8.dp))
                     }
-                    items(read, key = { it.id }) { item ->
+                    items(read, key = { it.firestoreId.ifEmpty { it.title } }) { item ->
                         AnnouncementCard(
                             title = item.title,
                             content = item.content,
