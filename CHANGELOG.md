@@ -65,3 +65,23 @@ All notable changes to Smart Campus Companion are documented here.
 - Dashboard placeholder
 - Navigation using NavHost
 - App theme setup (DarkGreen, MediumGreen, PaleGreen)
+
+# Changelog - v2.0-final
+
+### Added
+- Firebase Firestore implementation for database-driven role management.
+- Admin Panel with in-place Edit (Popup) and Delete functionality.
+- Sign-Up screen with role selection and Admin Key verification.
+- Global Dark Mode support using dynamic Material3 color schemes.
+- Firebase Cloud Messaging (FCM) for real-time push notifications.
+- High-fidelity visual refinements (Layered headers, weight-based layouts).
+
+### Changed
+- Migrated from hardcoded email checks to cloud-based profile fetching.
+- Redesigned all 7 screens for UI/UX consistency and professional spacing.
+- Integrated real-time data counts into the Student Dashboard.
+
+### Fixed
+- Fixed text clipping on management cards and dashboard tiles.
+- Corrected overlapping scrolling behavior on Info and Task screens.
+- Standardized error handling and loading states for all network actions.
