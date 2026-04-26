@@ -1,16 +1,35 @@
 package com.example.smartcampuscompanion
 
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.tasks.await
+
 class AuthUtils {
 
-    fun validateLogin(username: String, password: String): Boolean {
-        return username == "student" && password == "1234"
+    private val auth = FirebaseAuth.getInstance()
+
+    // Returns UserRole on success, null on failure
+    suspend fun login(email: String, password: String): UserRole? {
+        return try {
+            auth.signInWithEmailAndPassword(email, password).await()
+            when (email.lowercase()) {
+                "admin@campus.edu" -> UserRole.ADMIN
+                else               -> UserRole.STUDENT
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 
-    fun isUsernameValid(username: String): Boolean {
-        return username.isNotBlank() && username.length >= 3
-    }
+    fun isEmailValid(email: String): Boolean =
+        email.isNotBlank() && email.contains("@")
 
-    fun isPasswordValid(password: String): Boolean {
-        return password.isNotBlank() && password.length >= 4
+    fun isPasswordValid(password: String): Boolean =
+        password.isNotBlank() && password.length >= 4
+
+    fun getCurrentUserEmail(): String? =
+        auth.currentUser?.email
+
+    fun signOut() {
+        auth.signOut()
     }
 }

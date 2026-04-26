@@ -2,12 +2,47 @@ package com.example.smartcampuscompanion.data.repository
 
 import com.example.smartcampuscompanion.data.local.AnnouncementDao
 import com.example.smartcampuscompanion.data.local.AnnouncementEntity
+import com.example.smartcampuscompanion.firebase.FirebaseService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onEach
 
-class AnnouncementRepository(private val dao: AnnouncementDao) {
+class AnnouncementRepository(
+    private val dao: AnnouncementDao,
+    private val firebaseService: FirebaseService = FirebaseService()
+) {
 
-    val announcements: Flow<List<AnnouncementEntity>> = dao.getAllAnnouncements()
+    // Primary source: Firestore real-time flow
+    // Each emission syncs to Room as local cache
+    val announcements: Flow<List<AnnouncementEntity>> =
+        firebaseService.getAnnouncementsFlow()
+            .onEach { firestoreList ->
+                // Sync Firestore data into Room cache
+                if (firestoreList.isNotEmpty()) {
+                    syncToRoom(firestoreList)
+                }
+            }
+
+    // Fallback: local Room data (used if Firestore is unreachable)
+    val localAnnouncements: Flow<List<AnnouncementEntity>> =
+        dao.getAllAnnouncements()
+
+    private suspend fun syncToRoom(firestoreList: List<AnnouncementEntity>) {
+        val existing = dao.getAllAnnouncements().first()
+        val existingFirestoreIds = existing.map { it.firestoreId }.toSet()
+
+        firestoreList.forEach { firestoreItem ->
+            if (firestoreItem.firestoreId !in existingFirestoreIds) {
+                dao.insert(firestoreItem)
+            } else {
+                // Update isRead status if changed
+                val local = existing.find { it.firestoreId == firestoreItem.firestoreId }
+                if (local != null && local.isRead != firestoreItem.isRead) {
+                    dao.update(local.copy(isRead = firestoreItem.isRead))
+                }
+            }
+        }
+    }
 
     suspend fun insert(announcement: AnnouncementEntity) {
         dao.insert(announcement)
@@ -15,12 +50,27 @@ class AnnouncementRepository(private val dao: AnnouncementDao) {
 
     suspend fun update(announcement: AnnouncementEntity) {
         dao.update(announcement)
+        // Also sync read status to Firestore
+        if (announcement.firestoreId.isNotEmpty()) {
+            firebaseService.markAsRead(announcement.firestoreId)
+        }
     }
 
     suspend fun delete(announcement: AnnouncementEntity) {
         dao.delete(announcement)
     }
 
+    // Post announcement to Firestore (admin action)
+    suspend fun postAnnouncement(
+        title: String,
+        content: String,
+        category: String,
+        postedBy: String
+    ): Boolean {
+        return firebaseService.postAnnouncement(title, content, category, postedBy)
+    }
+
+    // Local seed only if Room is empty (fallback for offline)
     suspend fun insertIfEmpty(announcements: List<AnnouncementEntity>) {
         val current = dao.getAllAnnouncements().first()
         if (current.isEmpty()) {

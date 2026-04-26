@@ -23,10 +23,15 @@ import com.example.smartcampuscompanion.ui.theme.DarkGreen
 import com.example.smartcampuscompanion.ui.theme.MediumGreen
 import com.example.smartcampuscompanion.ui.theme.PaleGreen
 import com.example.smartcampuscompanion.viewmodel.AnnouncementViewModel
+// Added Imports
+import androidx.compose.material3.LinearProgressIndicator
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostController) {
     val announcements by viewModel.announcements.collectAsState()
+    // Added isLoading state
+    val isLoading by viewModel.isLoading.collectAsState()
 
     val unread = announcements.filter { !it.isRead }
     val read = announcements.filter { it.isRead }
@@ -80,8 +85,18 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
             }
         }
 
-        // ── Body ─────────────────────────────────────────────────────────────
-        if (announcements.isEmpty()) {
+        // Added Loading Indicator Logic
+        if (isLoading) {
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth(),
+                color = MediumGreen,
+                trackColor = Color(0xFFCCCCCC)
+            )
+        }
+
+        // --- Body ---
+        if (announcements.isEmpty() && !isLoading) {
+            // Empty state (only shows if not loading)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -128,7 +143,7 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
                         SectionLabel(text = "New", badge = unread.size)
                         Spacer(modifier = Modifier.height(8.dp))
                     }
-                    items(unread, key = { it.id }) { item ->
+                    items(unread, key = { it.firestoreId.ifEmpty { it.title } }) { item ->
                         AnnouncementCard(
                             title = item.title,
                             content = item.content,
@@ -146,7 +161,7 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
                         SectionLabel(text = "Earlier")
                         Spacer(modifier = Modifier.height(8.dp))
                     }
-                    items(read, key = { it.id }) { item ->
+                    items(read, key = { it.firestoreId.ifEmpty { it.title } }) { item ->
                         AnnouncementCard(
                             title = item.title,
                             content = item.content,

@@ -4,18 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.smartcampuscompanion.data.local.TaskEntity
-import com.example.smartcampuscompanion.data.local.AnnouncementEntity
-import com.example.smartcampuscompanion.data.local.TaskDao
-import com.example.smartcampuscompanion.data.local.AnnouncementDao
-
 
 @Database(
-    entities = [
-        TaskEntity::class,
-        AnnouncementEntity::class
-    ],
-    version = 1,
+    entities = [TaskEntity::class, AnnouncementEntity::class],
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -24,7 +16,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun announcementDao(): AnnouncementDao
 
     companion object {
-
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -37,7 +28,6 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                     .fallbackToDestructiveMigration()
                     .build()
-
                 INSTANCE = instance
                 instance
             }

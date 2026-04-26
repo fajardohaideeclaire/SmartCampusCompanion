@@ -14,6 +14,7 @@ import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,9 +42,15 @@ fun DashboardScreen(
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
-    val username = sessionManager.getUsername()
+    val authUtils = remember { AuthUtils() }
+
+    val email = sessionManager.getUsername()
+    // Show just the part before @ e.g. "student" instead of "student@campus.edu"
+    val displayName = email.substringBefore("@")
+        .replaceFirstChar { it.uppercase() }
 
     val announcements by announcementViewModel.announcements.collectAsState()
+    val isLoading by announcementViewModel.isLoading.collectAsState()
     val unreadCount = announcements.count { !it.isRead }
 
     val greeting = remember {
@@ -63,11 +70,10 @@ fun DashboardScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF6F8F7))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
     ) {
-
-        // ── Header ───────────────────────────────────────────────────────────
+        // Header
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -75,7 +81,6 @@ fun DashboardScreen(
                 .padding(top = 52.dp, bottom = 32.dp, start = 24.dp, end = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Top bar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -88,13 +93,13 @@ fun DashboardScreen(
                     modifier = Modifier
                         .size(22.dp)
                         .clickable {
+                            authUtils.signOut()
                             sessionManager.clearSession()
                             navController.navigate("login") {
                                 popUpTo(0) { inclusive = true }
                             }
                         }
                 )
-                // Date label centered at top
                 Text(
                     text = today,
                     style = MaterialTheme.typography.labelSmall.copy(
@@ -124,24 +129,25 @@ fun DashboardScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Avatar
             Box(
                 modifier = Modifier
-                    .size(68.dp)
+                    .size(64.dp)
                     .background(Color(0x26FFFFFF), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Rounded.Person,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(36.dp)
+                // Show first letter of display name as avatar
+                Text(
+                    text = displayName.take(1),
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = Color.White
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Text(
                 text = greeting,
@@ -150,14 +156,23 @@ fun DashboardScreen(
                 textAlign = TextAlign.Center
             )
             Text(
-                text = username,
+                text = displayName,
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
         }
 
-        // ── Body ─────────────────────────────────────────────────────────────
+        // Loading indicator
+        if (isLoading) {
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth(),
+                color = MediumGreen,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        }
+
+        // Body
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -171,7 +186,6 @@ fun DashboardScreen(
                 modifier = Modifier.padding(bottom = 2.dp)
             )
 
-            // Campus row card
             NavRowCard(
                 icon = Icons.Rounded.LocationOn,
                 title = "Campus Information",
@@ -179,7 +193,6 @@ fun DashboardScreen(
                 onClick = { navController.navigate("campus") }
             )
 
-            // Tasks + Announcements tiles
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -191,14 +204,14 @@ fun DashboardScreen(
                     subtitle = "My schedule",
                     onClick = { navController.navigate("tasks") }
                 )
-
                 Box(modifier = Modifier.weight(1f)) {
                     NavTileCard(
                         modifier = Modifier.fillMaxWidth(),
                         icon = Icons.Rounded.Notifications,
                         title = "Announcements",
                         subtitle = if (unreadCount > 0) "$unreadCount unread" else "All read",
-                        subtitleColor = if (unreadCount > 0) MediumGreen else Color(0xFF9E9E9E),
+                        subtitleColor = if (unreadCount > 0) MediumGreen
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
                         onClick = { navController.navigate("announcements") }
                     )
                     if (unreadCount > 0) {
@@ -211,11 +224,25 @@ fun DashboardScreen(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "More",
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                color = DarkGreen,
+                modifier = Modifier.padding(bottom = 2.dp)
+            )
+
+            NavRowCard(
+                icon = Icons.Rounded.Settings,
+                title = "Settings",
+                subtitle = "Personalize your experience",
+                onClick = { navController.navigate("settings") }
+            )
         }
     }
 }
-
-// ── Badge ─────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun BadgeBox(count: Int, modifier: Modifier = Modifier) {
@@ -238,8 +265,6 @@ private fun BadgeBox(count: Int, modifier: Modifier = Modifier) {
     }
 }
 
-// ── Row card ──────────────────────────────────────────────────────────────────
-
 @Composable
 private fun NavRowCard(
     icon: ImageVector,
@@ -252,7 +277,9 @@ private fun NavRowCard(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -267,40 +294,31 @@ private fun NavRowCard(
                     .background(PaleGreen, RoundedCornerShape(13.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    icon,
-                    contentDescription = null,
-                    tint = MediumGreen,
-                    modifier = Modifier.size(22.dp)
-                )
+                Icon(icon, null, tint = MediumGreen, modifier = Modifier.size(22.dp))
             }
             Spacer(modifier = Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    color = DarkGreen
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF9E9E9E)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Icon(
                 Icons.Rounded.KeyboardArrowRight,
-                contentDescription = null,
-                tint = Color(0xFFBDBDBD),
+                null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
         }
     }
 }
-
-// ── Tile card — centered text ─────────────────────────────────────────────────
 
 @Composable
 private fun NavTileCard(
@@ -314,7 +332,9 @@ private fun NavTileCard(
     Card(
         modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -329,20 +349,13 @@ private fun NavTileCard(
                     .background(PaleGreen, RoundedCornerShape(13.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    icon,
-                    contentDescription = null,
-                    tint = MediumGreen,
-                    modifier = Modifier.size(22.dp)
-                )
+                Icon(icon, null, tint = MediumGreen, modifier = Modifier.size(22.dp))
             }
             Spacer(modifier = Modifier.height(14.dp))
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleSmall.copy(
-                    fontWeight = FontWeight.SemiBold
-                ),
-                color = DarkGreen,
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(3.dp))

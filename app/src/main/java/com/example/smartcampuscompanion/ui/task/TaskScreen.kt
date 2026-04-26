@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
@@ -27,14 +27,17 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.smartcampuscompanion.data.local.TaskEntity
+import com.example.smartcampuscompanion.viewmodel.TaskViewModel
 import com.example.smartcampuscompanion.ui.theme.DarkGreen
 import com.example.smartcampuscompanion.ui.theme.MediumGreen
 import com.example.smartcampuscompanion.ui.theme.PaleGreen
-import com.example.smartcampuscompanion.viewmodel.TaskViewModel
 import java.util.Calendar
 
 @Composable
-fun TaskScreen(viewModel: TaskViewModel, navController: NavHostController) {
+fun TaskScreen(
+    viewModel: TaskViewModel,
+    navController: NavHostController
+) {
     val tasks by viewModel.tasks.collectAsState()
     val context = LocalContext.current
 
@@ -48,7 +51,7 @@ fun TaskScreen(viewModel: TaskViewModel, navController: NavHostController) {
 
     val completedCount = tasks.count { it.isCompleted }
     val calendar = Calendar.getInstance()
-    val gradient = Brush.linearGradient(colors = listOf(DarkGreen, MediumGreen))
+    val gradient = Brush.linearGradient(listOf(DarkGreen, MediumGreen))
 
     Column(
         modifier = Modifier
@@ -56,17 +59,15 @@ fun TaskScreen(viewModel: TaskViewModel, navController: NavHostController) {
             .background(Color(0xFFF6F8F7))
     ) {
 
-        // ── Gradient Header ──────────────────────────────────────────────────
+        // 🔹 HEADER
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(gradient)
                 .padding(top = 52.dp, bottom = 28.dp, start = 24.dp, end = 24.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+
                 Box(
                     modifier = Modifier
                         .size(42.dp)
@@ -75,68 +76,56 @@ fun TaskScreen(viewModel: TaskViewModel, navController: NavHostController) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        Icons.Rounded.ArrowBack,
+                        Icons.AutoMirrored.Rounded.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                        tint = Color.White
                     )
                 }
+
                 Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
+
+                Column {
                     Text(
-                        text = "Task Manager",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        "Task Manager",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = if (tasks.isEmpty()) "No tasks yet"
+                        if (tasks.isEmpty()) "No tasks yet"
                         else "$completedCount of ${tasks.size} completed",
-                        style = MaterialTheme.typography.bodySmall,
                         color = Color(0xB3FFFFFF)
                     )
                 }
             }
         }
 
+        // 🔹 CONTENT
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp),
             contentPadding = PaddingValues(vertical = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
-            // ── Add / Edit Form ──────────────────────────────────────────────
+            // 🔹 FORM
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                ) {
+                Card(shape = RoundedCornerShape(18.dp)) {
                     Column(modifier = Modifier.padding(16.dp)) {
+
                         Text(
-                            text = if (editingTaskId == 0) "New Task" else "Edit Task",
-                            style = MaterialTheme.typography.titleSmall.copy(
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = DarkGreen
+                            if (editingTaskId == 0) "New Task" else "Edit Task",
+                            color = DarkGreen,
+                            fontWeight = FontWeight.Bold
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         OutlinedTextField(
                             value = title,
                             onValueChange = { title = it; errorMessage = "" },
                             label = { Text("Task Title") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            isError = errorMessage.isNotEmpty(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MediumGreen,
-                                focusedLabelColor = MediumGreen,
-                                focusedTextColor = DarkGreen,
-                                unfocusedTextColor = DarkGreen
-                            )
+                            modifier = Modifier.fillMaxWidth()
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -144,15 +133,8 @@ fun TaskScreen(viewModel: TaskViewModel, navController: NavHostController) {
                         OutlinedTextField(
                             value = description,
                             onValueChange = { description = it },
-                            label = { Text("Description (optional)") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MediumGreen,
-                                focusedLabelColor = MediumGreen,
-                                focusedTextColor = DarkGreen,
-                                unfocusedTextColor = DarkGreen
-                            )
+                            label = { Text("Description") },
+                            modifier = Modifier.fillMaxWidth()
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -165,9 +147,8 @@ fun TaskScreen(viewModel: TaskViewModel, navController: NavHostController) {
                                         TimePickerDialog(
                                             context,
                                             { _, hour, minute ->
-                                                val h = hour.toString().padStart(2, '0')
-                                                val m = minute.toString().padStart(2, '0')
-                                                selectedDateTime = "$day/${month + 1}/$year $h:$m"
+                                                selectedDateTime =
+                                                    "$day/${month + 1}/$year $hour:$minute"
                                                 errorMessage = ""
                                             },
                                             calendar.get(Calendar.HOUR_OF_DAY),
@@ -180,33 +161,25 @@ fun TaskScreen(viewModel: TaskViewModel, navController: NavHostController) {
                                     calendar.get(Calendar.DAY_OF_MONTH)
                                 ).show()
                             },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = if (selectedDateTime == "Select Date & Time")
-                                    Color(0xFF9E9E9E) else MediumGreen
-                            )
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(selectedDateTime)
                         }
 
                         if (errorMessage.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = errorMessage,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall
-                            )
+                            Text(errorMessage, color = MaterialTheme.colorScheme.error)
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         Button(
                             onClick = {
                                 when {
-                                    title.isBlank() -> errorMessage = "Please enter a task title"
+                                    title.isBlank() ->
+                                        errorMessage = "Please enter title"
                                     selectedDateTime == "Select Date & Time" ->
-                                        errorMessage = "Please select date and time"
+                                        errorMessage = "Select date/time"
                                     else -> {
                                         if (editingTaskId == 0) {
                                             viewModel.addTask(
@@ -227,6 +200,7 @@ fun TaskScreen(viewModel: TaskViewModel, navController: NavHostController) {
                                             )
                                             editingTaskId = 0
                                         }
+
                                         title = ""
                                         description = ""
                                         selectedDateTime = "Select Date & Time"
@@ -235,190 +209,96 @@ fun TaskScreen(viewModel: TaskViewModel, navController: NavHostController) {
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MediumGreen,
-                                contentColor = Color.White
-                            )
+                            colors = ButtonDefaults.buttonColors(containerColor = MediumGreen)
                         ) {
-                            Text(
-                                if (editingTaskId == 0) "Add Task" else "Update Task",
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-
-                        if (editingTaskId != 0) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            OutlinedButton(
-                                onClick = {
-                                    editingTaskId = 0
-                                    title = ""
-                                    description = ""
-                                    selectedDateTime = "Select Date & Time"
-                                    errorMessage = ""
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Text("Cancel")
-                            }
+                            Text("Save", color = Color.White)
                         }
                     }
                 }
             }
 
-            // ── Empty state ──────────────────────────────────────────────────
+            // 🔹 EMPTY STATE
             if (tasks.isEmpty()) {
                 item {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 32.dp),
+                            .padding(vertical = 40.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
                             Icons.Rounded.CheckCircle,
                             contentDescription = null,
-                            tint = Color(0xFFCCCCCC),
-                            modifier = Modifier.size(56.dp)
+                            tint = Color.Gray,
+                            modifier = Modifier.size(60.dp)
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "No tasks yet",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                            color = Color(0xFF888888)
-                        )
-                        Text(
-                            text = "Add your first task above",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFFAAAAAA),
-                            textAlign = TextAlign.Center
-                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text("No tasks yet", color = Color.Gray)
                     }
                 }
             }
 
-            // ── Task section label ───────────────────────────────────────────
-            if (tasks.isNotEmpty()) {
-                item {
-                    Text(
-                        text = "My Tasks",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                        color = DarkGreen
-                    )
-                }
-            }
-
-            // ── Task cards ───────────────────────────────────────────────────
+            // 🔹 TASK LIST
             items(tasks, key = { it.id }) { task ->
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (task.isCompleted) Color(0xFFF5F5F5) else Color.White
-                    ),
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = if (task.isCompleted) 0.dp else 2.dp
+                        containerColor =
+                            if (task.isCompleted) Color(0xFFF0F0F0) else Color.White
                     )
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.Top
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Checkbox styled as circle
+
                         Checkbox(
                             checked = task.isCompleted,
-                            onCheckedChange = { viewModel.toggleTaskCompletion(task) },
+                            onCheckedChange = {
+                                viewModel.toggleTaskCompletion(task)
+                            },
                             colors = CheckboxDefaults.colors(
-                                checkedColor = MediumGreen,
-                                uncheckedColor = Color(0xFFBDBDBD)
+                                checkedColor = MediumGreen
                             )
                         )
+
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Column(modifier = Modifier.weight(1f)) {
+
                             Text(
-                                text = task.title,
-                                style = MaterialTheme.typography.titleSmall.copy(
-                                    fontWeight = if (task.isCompleted) FontWeight.Normal
-                                    else FontWeight.SemiBold,
-                                    textDecoration = if (task.isCompleted)
-                                        TextDecoration.LineThrough else null
-                                ),
-                                color = if (task.isCompleted) Color(0xFF9E9E9E) else DarkGreen
+                                task.title,
+                                fontWeight = FontWeight.SemiBold,
+                                textDecoration = if (task.isCompleted)
+                                    TextDecoration.LineThrough else null,
+                                color = if (task.isCompleted)
+                                    Color.Gray else DarkGreen
                             )
 
-                            if (task.description.isNotBlank()) {
-                                Spacer(modifier = Modifier.height(3.dp))
-                                Text(
-                                    text = task.description,
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        textDecoration = if (task.isCompleted)
-                                            TextDecoration.LineThrough else null
-                                    ),
-                                    color = if (task.isCompleted) Color(0xFFBBBBBB)
-                                    else Color(0xFF666666)
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                            // Due date chip
-                            Box(
-                                modifier = Modifier
-                                    .background(
-                                        if (task.isCompleted) Color(0xFFEEEEEE) else PaleGreen,
-                                        RoundedCornerShape(6.dp)
-                                    )
-                                    .padding(horizontal = 8.dp, vertical = 3.dp)
-                            ) {
-                                Text(
-                                    text = "Due: ${task.dateTime}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = if (task.isCompleted) Color(0xFFAAAAAA) else MediumGreen
-                                )
-                            }
+                            Text(
+                                "Due: ${task.dateTime}",
+                                color = MediumGreen
+                            )
                         }
 
-                        // Edit + Delete icon buttons
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            if (!task.isCompleted) {
-                                IconButton(
-                                    onClick = {
-                                        title = task.title
-                                        description = task.description
-                                        selectedDateTime = task.dateTime
-                                        editingTaskId = task.id
-                                    },
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Rounded.Edit,
-                                        contentDescription = "Edit",
-                                        tint = MediumGreen,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                }
-                            }
-                            IconButton(
-                                onClick = {
-                                    taskToDelete = task
-                                    showDeleteDialog = true
-                                },
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Icon(
-                                    Icons.Rounded.Delete,
-                                    contentDescription = "Delete",
-                                    tint = Color(0xFFE53935),
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
+                        IconButton(onClick = {
+                            title = task.title
+                            description = task.description
+                            selectedDateTime = task.dateTime
+                            editingTaskId = task.id
+                        }) {
+                            Icon(Icons.Rounded.Edit, contentDescription = "Edit")
+                        }
+
+                        IconButton(onClick = {
+                            taskToDelete = task
+                            showDeleteDialog = true
+                        }) {
+                            Icon(
+                                Icons.Rounded.Delete,
+                                contentDescription = "Delete",
+                                tint = Color.Red
+                            )
                         }
                     }
                 }
@@ -426,24 +306,24 @@ fun TaskScreen(viewModel: TaskViewModel, navController: NavHostController) {
         }
     }
 
+    // 🔹 DELETE DIALOG
     if (showDeleteDialog && taskToDelete != null) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = { Text("Delete Task") },
-            text = { Text("Are you sure you want to delete \"${taskToDelete?.title}\"?") },
+            text = { Text("Delete \"${taskToDelete?.title}\"?") },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        taskToDelete?.let { viewModel.deleteTask(it) }
-                        showDeleteDialog = false
-                        taskToDelete = null
-                    }
-                ) {
+                TextButton(onClick = {
+                    taskToDelete?.let { viewModel.deleteTask(it) }
+                    showDeleteDialog = false
+                }) {
                     Text("Delete", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
+                TextButton(onClick = {
+                    showDeleteDialog = false
+                }) {
                     Text("Cancel")
                 }
             }

@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     kotlin("android")
     kotlin("kapt")
+    id("com.google.gms.google-services")
 }
 
 
@@ -71,4 +72,13 @@ android {
         androidTestImplementation(libs.androidx.compose.ui.test.junit4)
         debugImplementation(libs.androidx.compose.ui.tooling)
         debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+        // Firebase BOM — manages all Firebase library versions
+        implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+        implementation("com.google.firebase:firebase-firestore-ktx")
+        implementation("com.google.firebase:firebase-auth-ktx")
+
+        // Coroutines support for Firebase await()
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
     }
