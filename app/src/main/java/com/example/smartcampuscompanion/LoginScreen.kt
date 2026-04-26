@@ -1,26 +1,34 @@
 package com.example.smartcampuscompanion
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Email
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.Visibility
-import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -34,6 +42,18 @@ fun LoginScreen(navController: NavHostController) {
     val sessionManager = remember { SessionManager(context) }
     val authUtils = remember { AuthUtils() }
     val scope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
+
+    val infiniteTransition = rememberInfiniteTransition(label = "background")
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(20000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "rotation"
+    )
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -48,40 +68,70 @@ fun LoginScreen(navController: NavHostController) {
             .fillMaxSize()
             .background(gradient)
     ) {
-        // Decorative circles
+        // Decorative background elements
         Box(
             modifier = Modifier
-                .size(220.dp)
-                .offset(x = -60.dp, y = -60.dp)
-                .background(Color(0x1AFFFFFF), CircleShape)
+                .size(300.dp)
+                .offset(x = (-100).dp, y = (-100).dp)
+                .rotate(rotation)
+                .background(Color(0x0DFFFFFF), CircleShape)
         )
         Box(
             modifier = Modifier
-                .size(180.dp)
+                .size(200.dp)
+                .align(Alignment.CenterEnd)
+                .offset(x = 80.dp, y = (-150).dp)
+                .rotate(-rotation)
+                .border(2.dp, Color(0x1AFFFFFF), CircleShape)
+        )
+        Box(
+            modifier = Modifier
+                .size(150.dp)
+                .align(Alignment.BottomStart)
+                .offset(x = (-40).dp, y = 40.dp)
+                .background(Color(0x0DFFFFFF), CircleShape)
+        )
+        Box(
+            modifier = Modifier
+                .size(250.dp)
                 .align(Alignment.BottomEnd)
-                .offset(x = 50.dp, y = 50.dp)
+                .offset(x = 100.dp, y = 100.dp)
+                .rotate(rotation * 0.5f)
                 .background(Color(0x1AFFFFFF), CircleShape)
         )
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(28.dp),
+                .padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(72.dp))
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Animated Logo
+            val logoScale by infiniteTransition.animateFloat(
+                initialValue = 1f,
+                targetValue = 1.1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(2000, easing = FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "logoScale"
+            )
 
             Box(
                 modifier = Modifier
-                    .size(88.dp)
-                    .background(Color(0x26FFFFFF), RoundedCornerShape(24.dp)),
+                    .size(100.dp)
+                    .background(Color(0x33FFFFFF), RoundedCornerShape(28.dp))
+                    .border(1.dp, Color(0x4DFFFFFF), RoundedCornerShape(28.dp))
+                    .padding(logoScale.dp * 2),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    Icons.Rounded.Star,
+                    Icons.Rounded.AutoAwesome,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(44.dp)
+                    modifier = Modifier.size(52.dp)
                 )
             }
 
@@ -90,63 +140,65 @@ fun LoginScreen(navController: NavHostController) {
             Text(
                 text = "Smart Campus",
                 style = MaterialTheme.typography.headlineLarge.copy(
-                    fontWeight = FontWeight.Bold, fontSize = 30.sp
+                    fontWeight = FontWeight.ExtraBold, fontSize = 38.sp,
+                    letterSpacing = (-1.5).sp
                 ),
                 color = Color.White
             )
             Text(
                 text = "Companion",
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    fontWeight = FontWeight.Bold, fontSize = 30.sp
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Light, fontSize = 32.sp,
+                    letterSpacing = 4.sp
                 ),
-                color = Color(0xB3FFFFFF)
+                color = Color(0xCCFFFFFF)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Sign in to your account to continue",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color(0x99FFFFFF),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(48.dp))
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                shape = RoundedCornerShape(32.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp)
+                        .padding(28.dp)
                 ) {
                     // Email field
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it; errorMessage = "" },
-                        label = { Text("Email") },
+                        label = { Text("Email Address") },
                         leadingIcon = {
                             Icon(Icons.Rounded.Email, null, tint = MediumGreen)
                         },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = DarkGreen,
-                            unfocusedTextColor = DarkGreen,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                             focusedBorderColor = MediumGreen,
-                            unfocusedBorderColor = Color(0xFFCCCCCC),
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
                             focusedLabelColor = MediumGreen,
-                            unfocusedLabelColor = Color(0xFF888888)
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                         ),
-                        isError = errorMessage.isNotEmpty()
+                        isError = errorMessage.isNotEmpty(),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                        )
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     // Password field
                     OutlinedTextField(
@@ -171,16 +223,25 @@ fun LoginScreen(navController: NavHostController) {
                         else PasswordVisualTransformation(),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = DarkGreen,
-                            unfocusedTextColor = DarkGreen,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                             focusedBorderColor = MediumGreen,
-                            unfocusedBorderColor = Color(0xFFCCCCCC),
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
                             focusedLabelColor = MediumGreen,
-                            unfocusedLabelColor = Color(0xFF888888)
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                         ),
-                        isError = errorMessage.isNotEmpty()
+                        isError = errorMessage.isNotEmpty(),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { focusManager.clearFocus() }
+                        )
                     )
 
                     if (errorMessage.isNotEmpty()) {
@@ -193,7 +254,7 @@ fun LoginScreen(navController: NavHostController) {
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(32.dp))
 
                     // Login button
                     Button(
@@ -231,8 +292,8 @@ fun LoginScreen(navController: NavHostController) {
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(14.dp),
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MediumGreen,
                             contentColor = Color.White
@@ -242,15 +303,15 @@ fun LoginScreen(navController: NavHostController) {
                         if (isLoading) {
                             CircularProgressIndicator(
                                 color = Color.White,
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 3.dp
                             )
                         } else {
                             Text(
-                                text = "Login",
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 16.sp
+                                text = "Sign In",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.sp
                                 )
                             )
                         }
@@ -260,18 +321,24 @@ fun LoginScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = "Student: student@campus.edu / 1234",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0x99FFFFFF),
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = "Admin: admin@campus.edu / admin123",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0x99FFFFFF),
-                textAlign = TextAlign.Center
-            )
+            TextButton(onClick = { navController.navigate("register") }) {
+                Text(
+                    text = buildAnnotatedString {
+                        append("Don't have an account? ")
+                        withStyle(
+                            style = SpanStyle(
+                                fontWeight = FontWeight.ExtraBold,
+                                textDecoration = TextDecoration.Underline
+                            )
+                        ) {
+                            append("Sign Up")
+                        }
+                    },
+                    color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1.2f))
         }
     }
 }

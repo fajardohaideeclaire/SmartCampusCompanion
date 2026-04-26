@@ -56,8 +56,21 @@ class AnnouncementRepository(
         }
     }
 
+    suspend fun updateAnnouncement(
+        firestoreId: String,
+        title: String,
+        content: String,
+        category: String
+    ): Boolean {
+        return firebaseService.updateAnnouncement(firestoreId, title, content, category)
+    }
+
     suspend fun delete(announcement: AnnouncementEntity) {
         dao.delete(announcement)
+        // Also delete from Firestore if it exists there
+        if (announcement.firestoreId.isNotEmpty()) {
+            firebaseService.deleteAnnouncement(announcement.firestoreId)
+        }
     }
 
     // Post announcement to Firestore (admin action)

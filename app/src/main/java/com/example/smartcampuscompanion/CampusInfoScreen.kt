@@ -2,6 +2,7 @@ package com.example.smartcampuscompanion
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,20 +10,20 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Email
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.KeyboardArrowUp
-import androidx.compose.material.icons.rounded.LocationOn
-import androidx.compose.material.icons.rounded.Phone
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.Assignment
+import androidx.compose.material.icons.automirrored.rounded.LibraryBooks
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.smartcampuscompanion.ui.theme.DarkGreen
 import com.example.smartcampuscompanion.ui.theme.MediumGreen
@@ -151,74 +152,27 @@ fun CampusInfoScreen(navController: NavHostController) {
 
     val gradient = Brush.linearGradient(colors = listOf(DarkGreen, MediumGreen))
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        // Header
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(gradient)
-                .padding(top = 52.dp, bottom = 28.dp, start = 24.dp, end = 24.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .align(Alignment.TopEnd)
-                    .offset(x = 40.dp, y = -40.dp)
-                    .background(color = Color(0x1AFFFFFF), shape = CircleShape)
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .background(color = Color(0x1AFFFFFF), shape = CircleShape)
-                        .clickable { navController.popBackStack() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        text = "Campus Information",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
-                    )
-                    Text(
-                        text = "Tap a college to expand details",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xB3FFFFFF)
-                    )
-                }
-            }
-        }
-
-        // Body
+        // Body - Placed first so it scrolls UNDER the header
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp),
-            contentPadding = PaddingValues(vertical = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(top = 196.dp, bottom = 40.dp, start = 24.dp, end = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
                 Text(
                     text = "Colleges & Programs",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                    color = DarkGreen
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.5.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
             }
 
             items(departments) { dept ->
@@ -226,27 +180,115 @@ fun CampusInfoScreen(navController: NavHostController) {
             }
 
             item {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Campus Facilities",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                    color = DarkGreen
+                    text = "Campus Services",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.5.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            item {
                 FacilityInfoCard(
                     title = "Library",
-                    detail = "Open Mon–Sat, 7AM–8PM · Block G"
+                    detail = "Open Mon–Sat, 7AM–8PM · Block G",
+                    icon = Icons.AutoMirrored.Rounded.LibraryBooks,
+                    color = Color(0xFFE3F2FD),
+                    iconColor = Color(0xFF2196F3)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+            }
+            item {
                 FacilityInfoCard(
                     title = "Clinic",
-                    detail = "Open Mon–Fri, 8AM–5PM · Block H · +63 2 8888 0099"
+                    detail = "Open Mon–Fri, 8AM–5PM · Block H · +63 2 8888 0099",
+                    icon = Icons.Rounded.LocalHospital,
+                    color = Color(0xFFE8F5E9),
+                    iconColor = MediumGreen
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+            }
+            item {
                 FacilityInfoCard(
                     title = "Registrar",
-                    detail = "Open Mon–Fri, 8AM–5PM · Admin Building · registrar@campus.edu"
+                    detail = "Open Mon–Fri, 8AM–5PM · Admin Building · registrar@campus.edu",
+                    icon = Icons.AutoMirrored.Rounded.Assignment,
+                    color = Color(0xFFFFF3E0),
+                    iconColor = Color(0xFFFF9800)
                 )
+            }
+        }
+
+        // Sophisticated Header - Placed last so it stays on top
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .background(
+                    gradient,
+                    shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                )
+        ) {
+            // Background Decoration
+            Box(
+                modifier = Modifier
+                    .size(150.dp)
+                    .offset(x = (-30).dp, y = (-30).dp)
+                    .background(Color(0x0DFFFFFF), CircleShape)
+            )
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .align(Alignment.BottomEnd)
+                    .offset(x = 20.dp, y = 20.dp)
+                    .border(15.dp, Color(0x0DFFFFFF), CircleShape)
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp)
+            ) {
+                Spacer(modifier = Modifier.height(48.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = Color(0x1AFFFFFF)
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.width(16.dp))
+                    
+                    Column {
+                        Text(
+                            text = "Campus Information",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = (-0.5).sp
+                            ),
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Academic Colleges & Facilities",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xCCFFFFFF)
+                        )
+                    }
+                }
             }
         }
     }
@@ -260,11 +302,11 @@ fun DepartmentCard(dept: Department) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { expanded = !expanded },
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(18.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -272,13 +314,16 @@ fun DepartmentCard(dept: Department) {
                 // College code badge
                 Box(
                     modifier = Modifier
-                        .size(52.dp)
-                        .background(color = PaleGreen, shape = RoundedCornerShape(14.dp)),
+                        .size(56.dp)
+                        .background(color = PaleGreen, shape = RoundedCornerShape(16.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = dept.code,
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = 0.5.sp
+                        ),
                         color = MediumGreen
                     )
                 }
@@ -286,51 +331,77 @@ fun DepartmentCard(dept: Department) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = dept.name,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = DarkGreen
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Rounded.LocationOn,
                             contentDescription = null,
-                            tint = Color(0xFF888888),
-                            modifier = Modifier.size(13.dp)
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = dept.building,
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF888888)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
                 Icon(
                     imageVector = if (expanded) Icons.Rounded.KeyboardArrowUp
                     else Icons.Rounded.KeyboardArrowDown,
-                    contentDescription = if (expanded) "Collapse" else "Expand",
-                    tint = MediumGreen
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                 )
             }
 
             AnimatedVisibility(visible = expanded) {
-                Column(modifier = Modifier.padding(top = 14.dp)) {
-                    HorizontalDivider(color = Color(0xFFEEEEEE))
-                    Spacer(modifier = Modifier.height(12.dp))
+                Column(modifier = Modifier.padding(top = 20.dp)) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    // Contact info
-                    InfoRow(icon = Icons.Rounded.Email, text = dept.email)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    InfoRow(icon = Icons.Rounded.Phone, text = dept.phone)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "Dean: ${dept.head}",
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
-                        color = DarkGreen
-                    )
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Contact Information",
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MediumGreen
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            InfoRow(icon = Icons.Rounded.Email, text = dept.email)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            InfoRow(icon = Icons.Rounded.Phone, text = dept.phone)
+                        }
+                    }
 
-                    Spacer(modifier = Modifier.height(12.dp))
-                    HorizontalDivider(color = Color(0xFFEEEEEE))
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                            .padding(12.dp)
+                    ) {
+                        Column {
+                            Text(
+                                text = "College Dean",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = dept.head,
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     // Programs list
                     Text(
@@ -338,38 +409,32 @@ fun DepartmentCard(dept: Department) {
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                         color = MediumGreen
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     dept.programs.forEach { program ->
-                        Row(
-                            modifier = Modifier.padding(bottom = 4.dp)
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
                         ) {
-                            Text(
-                                text = "•",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MediumGreen,
-                                modifier = Modifier.padding(end = 6.dp, top = 1.dp)
-                            )
-                            Column {
+                            Column(modifier = Modifier.padding(12.dp)) {
                                 Text(
                                     text = program.title,
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        fontWeight = FontWeight.Medium
+                                        fontWeight = FontWeight.Bold
                                     ),
-                                    color = Color(0xFF333333)
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
-                                program.majors.forEach { major ->
-                                    Row(modifier = Modifier.padding(start = 8.dp, top = 2.dp)) {
+                                if (program.majors.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    program.majors.forEach { major ->
                                         Text(
-                                            text = "–",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = Color(0xFF888888),
-                                            modifier = Modifier.padding(end = 6.dp)
-                                        )
-                                        Text(
-                                            text = major,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = Color(0xFF666666)
+                                            text = "• $major",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.padding(start = 8.dp, top = 2.dp)
                                         )
                                     }
                                 }
@@ -383,43 +448,63 @@ fun DepartmentCard(dept: Department) {
 }
 
 @Composable
-fun InfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
+fun InfoRow(icon: ImageVector, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = Color(0xFF888888),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(14.dp)
         )
         Spacer(modifier = Modifier.width(6.dp))
         Text(
             text = text,
             style = MaterialTheme.typography.bodySmall,
-            color = Color(0xFF666666)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
 
 @Composable
-fun FacilityInfoCard(title: String, detail: String) {
+fun FacilityInfoCard(
+    title: String,
+    detail: String,
+    icon: ImageVector,
+    color: Color,
+    iconColor: Color
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = PaleGreen),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                color = DarkGreen
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = detail,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF555555)
-            )
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(color, RoundedCornerShape(14.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, null, tint = iconColor, modifier = Modifier.size(22.dp))
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = detail,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

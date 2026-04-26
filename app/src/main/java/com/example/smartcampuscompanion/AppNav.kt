@@ -16,13 +16,14 @@ import com.example.smartcampuscompanion.viewmodel.AnnouncementViewModelFactory
 import com.example.smartcampuscompanion.viewmodel.TaskViewModel
 import com.example.smartcampuscompanion.viewmodel.TaskViewModelFactory
 import com.example.smartcampuscompanion.ui.announcement.AnnouncementScreen
+import com.example.smartcampuscompanion.ui.announcement.AdminAnnouncementScreen
 import com.example.smartcampuscompanion.ui.task.TaskScreen
 
 @Composable
 fun AppNav(
     navController: NavHostController,
     isDarkMode: Boolean,
-    onDarkModeToggle: (Boolean) -> Unit
+    onDarkModeToggle: (Boolean) -> Unit,
 ) {
     val context = LocalContext.current
     val database = AppDatabase.getDatabase(context)
@@ -44,14 +45,23 @@ fun AppNav(
         factory = AnnouncementViewModelFactory(announcementRepository)
     )
 
+    val taskRepository = remember { TaskRepository(database.taskDao()) }
+    val taskViewModel: TaskViewModel = viewModel(
+        factory = TaskViewModelFactory(taskRepository)
+    )
+
     NavHost(navController = navController, startDestination = startDestination) {
         composable("login") {
             LoginScreen(navController)
         }
+        composable("register") {
+            RegisterScreen(navController)
+        }
         composable("dashboard") {
             DashboardScreen(
                 navController = navController,
-                announcementViewModel = announcementViewModel
+                announcementViewModel = announcementViewModel,
+                taskViewModel = taskViewModel
             )
         }
         composable("admin") {
@@ -64,14 +74,13 @@ fun AppNav(
             CampusInfoScreen(navController)
         }
         composable("tasks") {
-            val taskRepository = remember { TaskRepository(database.taskDao()) }
-            val taskViewModel: TaskViewModel = viewModel(
-                factory = TaskViewModelFactory(taskRepository)
-            )
             TaskScreen(taskViewModel, navController)
         }
         composable("announcements") {
             AnnouncementScreen(announcementViewModel, navController)
+        }
+        composable("admin_announcements") {
+            AdminAnnouncementScreen(announcementViewModel, navController)
         }
         composable("settings") {
             SettingsScreen(
