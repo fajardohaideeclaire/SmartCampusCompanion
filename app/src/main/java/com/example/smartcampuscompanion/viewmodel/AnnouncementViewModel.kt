@@ -34,6 +34,9 @@ class AnnouncementViewModel(
     private val _postSuccess = MutableStateFlow(false)
     val postSuccess: StateFlow<Boolean> = _postSuccess
 
+    private val _editingAnnouncement = MutableStateFlow<AnnouncementEntity?>(null)
+    val editingAnnouncement: StateFlow<AnnouncementEntity?> = _editingAnnouncement
+
     init {
         seedLocalFallback()
     }
@@ -57,6 +60,45 @@ class AnnouncementViewModel(
     fun markAsRead(announcement: AnnouncementEntity) {
         viewModelScope.launch {
             repository.update(announcement.copy(isRead = true))
+        }
+    }
+
+    fun deleteAnnouncement(announcement: AnnouncementEntity) {
+        viewModelScope.launch {
+            repository.delete(announcement)
+        }
+    }
+
+    fun setEditingAnnouncement(announcement: AnnouncementEntity?) {
+        _editingAnnouncement.value = announcement
+    }
+
+    // Admin updates an existing announcement in Firestore
+    fun updateAnnouncement(
+        firestoreId: String,
+        title: String,
+        content: String,
+        category: String
+    ) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            _postSuccess.value = false
+
+            val success = repository.updateAnnouncement(
+                firestoreId = firestoreId,
+                title = title,
+                content = content,
+                category = category
+            )
+
+            if (success) {
+                _postSuccess.value = true
+                _editingAnnouncement.value = null
+            } else {
+                _errorMessage.value = "Failed to update announcement. Check your connection."
+            }
+            _isLoading.value = false
         }
     }
 

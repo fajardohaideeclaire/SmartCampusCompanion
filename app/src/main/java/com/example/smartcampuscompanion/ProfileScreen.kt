@@ -1,15 +1,15 @@
 package com.example.smartcampuscompanion
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Email
-import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.Shield
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,159 +44,191 @@ fun ProfileScreen(navController: NavHostController) {
         UserRole.STUDENT -> "Student"
     }
 
-    val roleColor = when (role) {
-        UserRole.ADMIN   -> Color(0xFF1565C0)
-        UserRole.STUDENT -> MediumGreen
-    }
-
-    val roleBgColor = when (role) {
-        UserRole.ADMIN   -> Color(0xFFE3F2FD)
-        UserRole.STUDENT -> PaleGreen
-    }
-
     val gradient = Brush.linearGradient(colors = listOf(DarkGreen, MediumGreen))
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Header
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(gradient)
-                .padding(top = 52.dp, bottom = 28.dp, start = 24.dp, end = 24.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .background(Color(0x1AFFFFFF), CircleShape)
-                        .clickable { navController.popBackStack() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Rounded.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        text = "Profile",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
-                    )
-                    Text(
-                        text = "Your account information",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xB3FFFFFF)
-                    )
-                }
-            }
-        }
-
         // Body
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(196.dp))
 
-            // Avatar placeholder
+            // Avatar Section
             Box(
                 modifier = Modifier
-                    .size(96.dp)
-                    .background(PaleGreen, CircleShape),
-                contentAlignment = Alignment.Center
+                    .size(120.dp)
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(40.dp))
+                    .border(2.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(40.dp))
+                    .padding(4.dp)
             ) {
-                Text(
-                    text = displayName.take(1).uppercase(),
-                    style = MaterialTheme.typography.headlineLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 40.sp
-                    ),
-                    color = MediumGreen
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(PaleGreen, RoundedCornerShape(36.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = displayName.take(1).uppercase(),
+                        style = MaterialTheme.typography.displaySmall.copy(
+                            fontWeight = FontWeight.ExtraBold
+                        ),
+                        color = MediumGreen
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Display name
             Text(
                 text = displayName,
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Role badge
-            Box(
-                modifier = Modifier
-                    .background(roleBgColor, RoundedCornerShape(50.dp))
-                    .padding(horizontal = 16.dp, vertical = 5.dp)
+            Surface(
+                color = PaleGreen,
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
                     text = roleLabel,
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                    color = roleColor
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MediumGreen
                 )
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            // Info card
+            // Info Card
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Column(modifier = Modifier.padding(20.dp)) {
+                Column(modifier = Modifier.padding(24.dp)) {
                     Text(
-                        text = "Account Details",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                        color = DarkGreen
+                        text = "Account Information",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
                     ProfileInfoRow(
-                        icon = Icons.Rounded.Person,
+                        icon = Icons.Rounded.Badge,
                         label = "Full Name",
                         value = displayName
                     )
 
                     HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant
+                        modifier = Modifier.padding(vertical = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
 
                     ProfileInfoRow(
-                        icon = Icons.Rounded.Email,
+                        icon = Icons.Rounded.AlternateEmail,
                         label = "Email Address",
                         value = email
                     )
 
                     HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant
+                        modifier = Modifier.padding(vertical = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
 
                     ProfileInfoRow(
-                        icon = Icons.Rounded.Shield,
-                        label = "Role",
+                        icon = Icons.Rounded.VerifiedUser,
+                        label = "User Status",
                         value = roleLabel
                     )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(40.dp))
+        }
+
+        // Sophisticated Header - Placed last so it stays on top
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .background(
+                    gradient,
+                    shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                )
+        ) {
+            // Background Decoration
+            Box(
+                modifier = Modifier
+                    .size(150.dp)
+                    .offset(x = (-30).dp, y = (-30).dp)
+                    .background(Color(0x0DFFFFFF), CircleShape)
+            )
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .align(Alignment.BottomEnd)
+                    .offset(x = 20.dp, y = 20.dp)
+                    .border(15.dp, Color(0x0DFFFFFF), CircleShape)
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp)
+            ) {
+                Spacer(modifier = Modifier.height(48.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = Color(0x1AFFFFFF)
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.width(16.dp))
+                    
+                    Column {
+                        Text(
+                            text = "My Profile",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = (-0.5).sp
+                            ),
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Manage your account identity",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xCCFFFFFF)
+                        )
+                    }
                 }
             }
         }
@@ -215,18 +247,18 @@ private fun ProfileInfoRow(
     ) {
         Box(
             modifier = Modifier
-                .size(38.dp)
-                .background(PaleGreen, RoundedCornerShape(10.dp)),
+                .size(44.dp)
+                .background(PaleGreen.copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 icon,
                 contentDescription = null,
                 tint = MediumGreen,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(20.dp)
             )
         }
-        Spacer(modifier = Modifier.width(14.dp))
+        Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(
                 text = label,
@@ -236,10 +268,9 @@ private fun ProfileInfoRow(
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = value,
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
 }
-

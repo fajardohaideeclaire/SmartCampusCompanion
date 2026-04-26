@@ -1,26 +1,25 @@
 package com.example.smartcampuscompanion
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowDropDown
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Logout
-import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.automirrored.rounded.Logout
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -58,335 +57,301 @@ fun AdminScreen(
         if (postSuccess) {
             showSuccessDialog = true
             announcementViewModel.clearPostSuccess()
+            title = ""
+            content = ""
+            selectedCategory = "General"
         }
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
     ) {
-        // Header
+        // Body
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(gradient)
-                .padding(top = 52.dp, bottom = 32.dp, start = 24.dp, end = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .padding(horizontal = 24.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Spacer(modifier = Modifier.height(260.dp))
+            
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.SpaceEvenly
             ) {
-                Box(
-                    modifier = Modifier
-                        .background(Color(0x26FFFFFF), RoundedCornerShape(50.dp))
-                        .padding(horizontal = 12.dp, vertical = 5.dp)
-                ) {
+                Column {
                     Text(
-                        text = "ADMIN",
-                        style = MaterialTheme.typography.labelSmall.copy(
+                        text = "Admin Panel",
+                        style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp
+                            letterSpacing = 0.5.sp
                         ),
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 12.dp)
                     )
+
+                    // Post Announcement card
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(28.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(24.dp)) {
+                            OutlinedTextField(
+                                value = title,
+                                onValueChange = { title = it; titleError = "" },
+                                label = { Text("Announcement Title") },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(14.dp),
+                                isError = titleError.isNotEmpty(),
+                                singleLine = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MediumGreen,
+                                    focusedLabelColor = MediumGreen
+                                )
+                            )
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            OutlinedTextField(
+                                value = content,
+                                onValueChange = { content = it; contentError = "" },
+                                label = { Text("Main Content") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(110.dp),
+                                shape = RoundedCornerShape(14.dp),
+                                isError = contentError.isNotEmpty(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MediumGreen,
+                                    focusedLabelColor = MediumGreen
+                                )
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                ExposedDropdownMenuBox(
+                                    expanded = categoryDropdownExpanded,
+                                    onExpandedChange = { categoryDropdownExpanded = !categoryDropdownExpanded },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    OutlinedTextField(
+                                        value = selectedCategory,
+                                        onValueChange = {},
+                                        readOnly = true,
+                                        label = { Text("Category") },
+                                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryDropdownExpanded) },
+                                        modifier = Modifier.menuAnchor(),
+                                        shape = RoundedCornerShape(14.dp),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = MediumGreen,
+                                            focusedLabelColor = MediumGreen
+                                        )
+                                    )
+                                    ExposedDropdownMenu(
+                                        expanded = categoryDropdownExpanded,
+                                        onDismissRequest = { categoryDropdownExpanded = false }
+                                    ) {
+                                        categories.forEach { category ->
+                                            DropdownMenuItem(
+                                                text = { Text(category) },
+                                                onClick = {
+                                                    selectedCategory = category
+                                                    categoryDropdownExpanded = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                                
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Button(
+                                    onClick = {
+                                        var valid = true
+                                        if (title.isBlank()) { titleError = "Required"; valid = false }
+                                        if (content.isBlank()) { contentError = "Required"; valid = false }
+                                        if (valid) {
+                                            announcementViewModel.postAnnouncement(
+                                                title = title,
+                                                content = content,
+                                                category = selectedCategory,
+                                                postedBy = sessionManager.getUsername()
+                                            )
+                                        }
+                                    },
+                                    modifier = Modifier.height(56.dp).weight(0.7f),
+                                    shape = RoundedCornerShape(14.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = MediumGreen),
+                                    enabled = !isLoading
+                                ) {
+                                    if (isLoading) {
+                                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                                    } else {
+                                        Icon(Icons.Rounded.Send, null, modifier = Modifier.size(18.dp))
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Post")
+                                    }
+                                }
+                            }
+
+                            if (errorMessage != null) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
                 }
-                Icon(
-                    Icons.Rounded.Logout,
-                    contentDescription = "Logout",
-                    tint = Color(0xCCFFFFFF),
-                    modifier = Modifier
-                        .size(22.dp)
-                        .clickable {
+
+                Column {
+                    Text(
+                        text = "Quick Management",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        AdminQuickCard(
+                            modifier = Modifier.weight(1f),
+                            title = "Announcements",
+                            subtitle = "Edit or Delete",
+                            icon = Icons.Rounded.Campaign,
+                            onClick = { navController.navigate("admin_announcements") }
+                        )
+                        AdminQuickCard(
+                            modifier = Modifier.weight(1f),
+                            title = "App Settings",
+                            subtitle = "Configure system",
+                            icon = Icons.Rounded.Settings,
+                            onClick = { navController.navigate("settings") }
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+
+        // Sophisticated Header
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(240.dp)
+                .background(
+                    gradient,
+                    shape = RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp)
+                )
+        ) {
+            // Background Decoration
+            Box(
+                modifier = Modifier
+                    .size(180.dp)
+                    .offset(x = (-40).dp, y = (-40).dp)
+                    .background(Color(0x0DFFFFFF), CircleShape)
+            )
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .align(Alignment.BottomEnd)
+                    .offset(x = 20.dp, y = 20.dp)
+                    .border(15.dp, Color(0x0DFFFFFF), CircleShape)
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp)
+            ) {
+                Spacer(modifier = Modifier.height(56.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = {
                             authUtils.signOut()
                             sessionManager.clearSession()
                             navController.navigate("login") {
                                 popUpTo(0) { inclusive = true }
                             }
-                        }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .background(Color(0x26FFFFFF), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    Icons.Rounded.Notifications,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(34.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Text(
-                text = "Admin Dashboard",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = Color.White,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = sessionManager.getUsername(),
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0xB3FFFFFF),
-                textAlign = TextAlign.Center
-            )
-        }
-
-        // Body
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-
-            // Post Announcement card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        text = "Post New Announcement",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                        color = DarkGreen
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Title field
-                    OutlinedTextField(
-                        value = title,
-                        onValueChange = { title = it; titleError = "" },
-                        label = { Text("Announcement Title") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        isError = titleError.isNotEmpty(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MediumGreen,
-                            focusedLabelColor = MediumGreen,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                        )
-                    )
-                    if (titleError.isNotEmpty()) {
-                        Text(
-                            text = titleError,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(start = 4.dp, top = 4.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Content field
-                    OutlinedTextField(
-                        value = content,
-                        onValueChange = { content = it; contentError = "" },
-                        label = { Text("Announcement Content") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(120.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        isError = contentError.isNotEmpty(),
-                        maxLines = 5,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MediumGreen,
-                            focusedLabelColor = MediumGreen,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                        )
-                    )
-                    if (contentError.isNotEmpty()) {
-                        Text(
-                            text = contentError,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(start = 4.dp, top = 4.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Category dropdown
-                    Text(
-                        text = "Category",
-                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = DarkGreen
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    ExposedDropdownMenuBox(
-                        expanded = categoryDropdownExpanded,
-                        onExpandedChange = { categoryDropdownExpanded = !categoryDropdownExpanded }
-                    ) {
-                        OutlinedTextField(
-                            value = selectedCategory,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Select Category") },
-                            trailingIcon = {
-                                Icon(
-                                    Icons.Rounded.ArrowDropDown,
-                                    contentDescription = null,
-                                    tint = MediumGreen
-                                )
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MediumGreen,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                focusedLabelColor = MediumGreen,
-                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                            )
-                        )
-                        ExposedDropdownMenu(
-                            expanded = categoryDropdownExpanded,
-                            onDismissRequest = { categoryDropdownExpanded = false }
-                        ) {
-                            categories.forEach { category ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = category,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = if (selectedCategory == category)
-                                                MediumGreen
-                                            else
-                                                MaterialTheme.colorScheme.onSurface
-                                        )
-                                    },
-                                    onClick = {
-                                        selectedCategory = category
-                                        categoryDropdownExpanded = false
-                                    },
-                                    modifier = if (selectedCategory == category)
-                                        Modifier.background(PaleGreen)
-                                    else
-                                        Modifier
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // Error message
-                    if (errorMessage != null) {
-                        Text(
-                            text = errorMessage!!,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                    }
-
-                    // Post button
-                    Button(
-                        onClick = {
-                            var valid = true
-                            if (title.isBlank()) {
-                                titleError = "Title is required"
-                                valid = false
-                            }
-                            if (content.isBlank()) {
-                                contentError = "Content is required"
-                                valid = false
-                            }
-                            if (valid) {
-                                announcementViewModel.postAnnouncement(
-                                    title = title,
-                                    content = content,
-                                    category = selectedCategory,
-                                    postedBy = sessionManager.getUsername()
-                                )
-                            }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MediumGreen,
-                            contentColor = Color.White
-                        ),
-                        enabled = !isLoading
+                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0x1AFFFFFF))
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                color = Color.White,
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text("Post Announcement", fontWeight = FontWeight.SemiBold)
-                        }
+                        Icon(Icons.AutoMirrored.Rounded.Logout, "Logout", tint = Color.White, modifier = Modifier.size(22.dp))
+                    }
+                    
+                    Surface(
+                        color = Color(0x26FFFFFF),
+                        shape = RoundedCornerShape(50.dp)
+                    ) {
+                        Text(
+                            text = "SYSTEM ADMINISTRATOR",
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = 1.2.sp),
+                            color = Color.White
+                        )
+                    }
+
+                    IconButton(
+                        onClick = { navController.navigate("profile") },
+                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0x1AFFFFFF))
+                    ) {
+                        Icon(Icons.Rounded.Person, "Profile", tint = Color.White, modifier = Modifier.size(22.dp))
                     }
                 }
-            }
 
-            // View announcements card
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { navController.navigate("announcements") },
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-            ) {
+                Spacer(modifier = Modifier.weight(1f))
+
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier = Modifier.padding(bottom = 36.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
-                            .background(PaleGreen, RoundedCornerShape(12.dp)),
-                        contentAlignment = Alignment.Center
+                            .size(68.dp)
+                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
+                            .padding(2.dp)
                     ) {
-                        Icon(
-                            Icons.Rounded.CheckCircle,
-                            contentDescription = null,
-                            tint = MediumGreen,
-                            modifier = Modifier.size(22.dp)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(PaleGreen, RoundedCornerShape(22.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "A",
+                                style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.ExtraBold, fontSize = 28.sp),
+                                color = MediumGreen
+                            )
+                        }
                     }
-                    Spacer(modifier = Modifier.width(14.dp))
+                    
+                    Spacer(modifier = Modifier.width(16.dp))
+                    
                     Column {
                         Text(
-                            text = "View All Announcements",
-                            style = MaterialTheme.typography.titleSmall.copy(
-                                fontWeight = FontWeight.SemiBold
+                            text = "Admin",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = (-0.5).sp
                             ),
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = Color.White
                         )
                         Text(
-                            text = "See what students are reading",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text = sessionManager.getUsername(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xCCFFFFFF)
                         )
                     }
                 }
@@ -397,36 +362,61 @@ fun AdminScreen(
     // Success dialog
     if (showSuccessDialog) {
         AlertDialog(
-            onDismissRequest = {
-                showSuccessDialog = false
-                title = ""
-                content = ""
-                selectedCategory = "General"
-            },
-            icon = {
-                Icon(
-                    Icons.Rounded.CheckCircle,
-                    contentDescription = null,
-                    tint = MediumGreen,
-                    modifier = Modifier.size(36.dp)
-                )
-            },
-            title = { Text("Announcement Posted!") },
-            text = {
-                Text("Your announcement has been posted and is now visible to all students.")
-            },
+            onDismissRequest = { showSuccessDialog = false },
+            icon = { Icon(Icons.Rounded.CheckCircle, null, tint = MediumGreen, modifier = Modifier.size(36.dp)) },
+            title = { Text("Broadcast Successful") },
+            text = { Text("The announcement has been pushed to all campus companion apps.") },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        showSuccessDialog = false
-                        title = ""
-                        content = ""
-                        selectedCategory = "General"
-                    }
-                ) {
-                    Text("OK", color = MediumGreen)
-                }
+                TextButton(onClick = { showSuccessDialog = false }) { Text("Dismiss", color = MediumGreen) }
             }
         )
+    }
+}
+
+@Composable
+private fun AdminQuickCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier.height(115.dp).clickable { onClick() },
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(10.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(PaleGreen.copy(alpha = 0.5f), RoundedCornerShape(10.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, null, tint = MediumGreen, modifier = Modifier.size(18.dp))
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
