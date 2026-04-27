@@ -70,6 +70,30 @@ class FirebaseService {
         }
     }
 
+    // Update an existing announcement (admin only)
+    suspend fun updateAnnouncement(
+        firestoreId: String,
+        title: String,
+        content: String,
+        category: String
+    ): Boolean {
+        return try {
+            if (firestoreId.isNotEmpty()) {
+                announcementsCollection.document(firestoreId)
+                    .update(
+                        mapOf(
+                            "title" to title,
+                            "content" to content,
+                            "category" to category
+                        )
+                    ).await()
+                true
+            } else false
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     // Mark announcement as read in Firestore
     suspend fun markAsRead(firestoreId: String) {
         try {
@@ -80,6 +104,18 @@ class FirebaseService {
             }
         } catch (e: Exception) {
             // Silently fail
+        }
+    }
+
+    // Delete announcement from Firestore (admin only)
+    suspend fun deleteAnnouncement(firestoreId: String): Boolean {
+        return try {
+            if (firestoreId.isNotEmpty()) {
+                announcementsCollection.document(firestoreId).delete().await()
+                true
+            } else false
+        } catch (e: Exception) {
+            false
         }
     }
 }
