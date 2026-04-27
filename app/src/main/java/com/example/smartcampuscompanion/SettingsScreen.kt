@@ -1,6 +1,7 @@
 package com.example.smartcampuscompanion
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -8,12 +9,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.DarkMode
-import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.KeyboardArrowRight
-import androidx.compose.material.icons.rounded.Notifications
-import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.Logout
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,7 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -35,109 +35,152 @@ fun SettingsScreen(
     isDarkMode: Boolean,
     onDarkModeToggle: (Boolean) -> Unit
 ) {
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val authUtils = remember { AuthUtils() }
+    
     var notificationsEnabled by remember { mutableStateOf(true) }
-
     val gradient = Brush.linearGradient(colors = listOf(DarkGreen, MediumGreen))
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Header
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(gradient)
-                .padding(top = 52.dp, bottom = 28.dp, start = 24.dp, end = 24.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .background(Color(0x1AFFFFFF), CircleShape)
-                        .clickable { navController.popBackStack() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Rounded.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        text = "Settings",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
-                    )
-                    Text(
-                        text = "Personalize your experience",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xB3FFFFFF)
-                    )
-                }
-            }
-        }
-
         // Body
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            SettingsSectionLabel("Appearance")
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(196.dp))
+            Column(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                SettingsSectionLabel("General")
+                
+                SettingsToggleItem(
+                    icon = Icons.Rounded.DarkMode,
+                    title = "Dark Mode",
+                    subtitle = if (isDarkMode) "Optimized for low-light" else "Classic bright appearance",
+                    checked = isDarkMode,
+                    onCheckedChange = { onDarkModeToggle(it) }
+                )
 
-            // Dark mode — now actually works
-            SettingsToggleItem(
-                icon = Icons.Rounded.DarkMode,
-                title = "Dark Mode",
-                subtitle = if (isDarkMode) "Dark theme is on" else "Light theme is on",
-                checked = isDarkMode,
-                onCheckedChange = { onDarkModeToggle(it) }
+                SettingsToggleItem(
+                    icon = Icons.Rounded.NotificationsActive,
+                    title = "Push Notifications",
+                    subtitle = "Real-time campus updates",
+                    checked = notificationsEnabled,
+                    onCheckedChange = { 
+                        notificationsEnabled = it 
+                        if (it) {
+                            com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic("announcements")
+                        } else {
+                            com.google.firebase.messaging.FirebaseMessaging.getInstance().unsubscribeFromTopic("announcements")
+                        }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+                SettingsSectionLabel("Session")
+
+                SettingsClickItem(
+                    icon = Icons.AutoMirrored.Rounded.Logout,
+                    title = "Sign Out",
+                    subtitle = "Securely leave your account",
+                    color = MaterialTheme.colorScheme.error,
+                    onClick = {
+                        authUtils.signOut()
+                        sessionManager.clearSession()
+                        navController.navigate("login") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                Text(
+                    text = "Smart Campus Companion v2.0",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+            }
+        }
+
+        // Sophisticated Header
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .background(
+                    gradient,
+                    shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                )
+        ) {
+            // Background Decoration
+            Box(
+                modifier = Modifier
+                    .size(150.dp)
+                    .offset(x = (-30).dp, y = (-30).dp)
+                    .background(Color(0x0DFFFFFF), CircleShape)
+            )
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .align(Alignment.BottomEnd)
+                    .offset(x = 20.dp, y = 20.dp)
+                    .border(15.dp, Color(0x0DFFFFFF), CircleShape)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-            SettingsSectionLabel("Notifications")
-            Spacer(modifier = Modifier.height(4.dp))
-
-            SettingsToggleItem(
-                icon = Icons.Rounded.Notifications,
-                title = "Push Notifications",
-                subtitle = "Receive campus announcements instantly",
-                checked = notificationsEnabled,
-                onCheckedChange = { notificationsEnabled = it }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-            SettingsSectionLabel("Account")
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Profile — navigates to ProfileScreen
-            SettingsClickItem(
-                icon = Icons.Rounded.Person,
-                title = "Profile",
-                subtitle = "View your account information",
-                onClick = { navController.navigate("profile") }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-            SettingsSectionLabel("App")
-            Spacer(modifier = Modifier.height(4.dp))
-
-            SettingsClickItem(
-                icon = Icons.Rounded.Info,
-                title = "About Smart Campus",
-                subtitle = "Version 2.0 — Finals Release",
-                onClick = {}
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp)
+            ) {
+                Spacer(modifier = Modifier.height(48.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = Color(0x1AFFFFFF)
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.width(16.dp))
+                    
+                    Column {
+                        Text(
+                            text = "Settings",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = (-0.5).sp
+                            ),
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Manage your preferences",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xCCFFFFFF)
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -145,12 +188,12 @@ fun SettingsScreen(
 @Composable
 private fun SettingsSectionLabel(text: String) {
     Text(
-        text = text.uppercase(),
-        style = MaterialTheme.typography.labelSmall.copy(
+        text = text,
+        style = MaterialTheme.typography.titleMedium.copy(
             fontWeight = FontWeight.Bold,
-            letterSpacing = 1.2.sp
+            letterSpacing = 0.5.sp
         ),
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier.padding(start = 4.dp)
     )
 }
@@ -165,10 +208,8 @@ private fun SettingsToggleItem(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -179,17 +220,17 @@ private fun SettingsToggleItem(
         ) {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .background(PaleGreen, RoundedCornerShape(12.dp)),
+                    .size(48.dp)
+                    .background(PaleGreen, RoundedCornerShape(14.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, null, tint = MediumGreen, modifier = Modifier.size(20.dp))
+                Icon(icon, null, tint = MediumGreen, modifier = Modifier.size(22.dp))
             }
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
@@ -205,7 +246,7 @@ private fun SettingsToggleItem(
                     checkedThumbColor = Color.White,
                     checkedTrackColor = MediumGreen,
                     uncheckedThumbColor = Color.White,
-                    uncheckedTrackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )
         }
@@ -217,16 +258,17 @@ private fun SettingsClickItem(
     icon: ImageVector,
     title: String,
     subtitle: String,
+    color: Color = Color.Unspecified,
     onClick: () -> Unit
 ) {
+    val titleColor = if (color == Color.Unspecified) MaterialTheme.colorScheme.onSurface else color
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -237,18 +279,26 @@ private fun SettingsClickItem(
         ) {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .background(PaleGreen, RoundedCornerShape(12.dp)),
+                    .size(48.dp)
+                    .background(
+                        if (color == MaterialTheme.colorScheme.error) Color(0xFFFFEBEE) else PaleGreen, 
+                        RoundedCornerShape(14.dp)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, null, tint = MediumGreen, modifier = Modifier.size(20.dp))
+                Icon(
+                    icon, 
+                    null, 
+                    tint = if (color == MaterialTheme.colorScheme.error) Color(0xFFD32F2F) else MediumGreen, 
+                    modifier = Modifier.size(22.dp)
+                )
             }
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                    color = titleColor
                 )
                 Text(
                     text = subtitle,
@@ -257,10 +307,10 @@ private fun SettingsClickItem(
                 )
             }
             Icon(
-                Icons.Rounded.KeyboardArrowRight,
+                Icons.Rounded.ChevronRight,
                 null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp)
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                modifier = Modifier.size(24.dp)
             )
         }
     }

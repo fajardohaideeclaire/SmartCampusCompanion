@@ -1,15 +1,15 @@
 package com.example.smartcampuscompanion.ui.announcement
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,20 +17,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.smartcampuscompanion.ui.theme.DarkGreen
 import com.example.smartcampuscompanion.ui.theme.MediumGreen
 import com.example.smartcampuscompanion.ui.theme.PaleGreen
 import com.example.smartcampuscompanion.viewmodel.AnnouncementViewModel
-// Added Imports
-import androidx.compose.material3.LinearProgressIndicator
-import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostController) {
     val announcements by viewModel.announcements.collectAsState()
-    // Added isLoading state
     val isLoading by viewModel.isLoading.collectAsState()
 
     val unread = announcements.filter { !it.isRead }
@@ -38,110 +36,56 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
 
     val gradient = Brush.linearGradient(colors = listOf(DarkGreen, MediumGreen))
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF6F8F7))
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        // ── Header ───────────────────────────────────────────────────────────
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(gradient)
-                .padding(top = 52.dp, bottom = 28.dp, start = 24.dp, end = 24.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .background(Color(0x1AFFFFFF), CircleShape)
-                        .clickable { navController.popBackStack() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Rounded.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        text = "Announcements",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
-                    )
-                    Text(
-                        text = if (unread.isEmpty()) "All caught up!"
-                        else "${unread.size} unread message${if (unread.size > 1) "s" else ""}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xB3FFFFFF)
-                    )
-                }
-            }
-        }
-
-        // Added Loading Indicator Logic
-        if (isLoading) {
-            LinearProgressIndicator(
-                modifier = Modifier.fillMaxWidth(),
-                color = MediumGreen,
-                trackColor = Color(0xFFCCCCCC)
-            )
-        }
-
-        // --- Body ---
+        // Body - Placed first so it scrolls UNDER the header
         if (announcements.isEmpty() && !isLoading) {
-            // Empty state (only shows if not loading)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(32.dp),
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Box(
                     modifier = Modifier
-                        .size(80.dp)
+                        .size(100.dp)
                         .background(PaleGreen, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        Icons.Rounded.Notifications,
+                        Icons.Rounded.AllInbox,
                         contentDescription = null,
                         tint = MediumGreen,
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.size(48.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = "No Announcements Yet",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = DarkGreen
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Check back later for updates from your campus.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF888888)
+                    text = "You're all caught up! Check back later for campus updates.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
                 )
             }
         } else {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp),
-                contentPadding = PaddingValues(vertical = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(top = 196.dp, bottom = 40.dp, start = 24.dp, end = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 if (unread.isNotEmpty()) {
                     item {
-                        SectionLabel(text = "New", badge = unread.size)
-                        Spacer(modifier = Modifier.height(8.dp))
+                        SectionHeader(text = "New Updates", count = unread.size)
                     }
                     items(unread, key = { it.firestoreId.ifEmpty { it.title } }) { item ->
                         AnnouncementCard(
@@ -158,8 +102,7 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
                 if (read.isNotEmpty()) {
                     item {
                         Spacer(modifier = Modifier.height(8.dp))
-                        SectionLabel(text = "Earlier")
-                        Spacer(modifier = Modifier.height(8.dp))
+                        SectionHeader(text = "Earlier")
                     }
                     items(read, key = { it.firestoreId.ifEmpty { it.title } }) { item ->
                         AnnouncementCard(
@@ -174,29 +117,114 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel, navController: NavHostC
                 }
             }
         }
+
+        // Sophisticated Header - Placed last so it stays on top
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .background(
+                    gradient,
+                    shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                )
+        ) {
+            // Background Decoration
+            Box(
+                modifier = Modifier
+                    .size(150.dp)
+                    .offset(x = (-30).dp, y = (-30).dp)
+                    .background(Color(0x0DFFFFFF), CircleShape)
+            )
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .align(Alignment.BottomEnd)
+                    .offset(x = 20.dp, y = 20.dp)
+                    .border(15.dp, Color(0x0DFFFFFF), CircleShape)
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp)
+            ) {
+                Spacer(modifier = Modifier.height(48.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = Color(0x1AFFFFFF)
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.width(16.dp))
+                    
+                    Column {
+                        Text(
+                            text = "Announcements",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = (-0.5).sp
+                            ),
+                            color = Color.White
+                        )
+                        Text(
+                            text = if (unread.isEmpty()) "All caught up!"
+                                   else "${unread.size} unread updates",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xCCFFFFFF)
+                        )
+                    }
+                }
+            }
+
+            if (isLoading) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
+                    color = Color.White,
+                    trackColor = Color.Transparent
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun SectionLabel(text: String, badge: Int? = null) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+private fun SectionHeader(text: String, count: Int? = null) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-            color = DarkGreen
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.5.sp
+            ),
+            color = MaterialTheme.colorScheme.onSurface
         )
-        if (badge != null) {
-            Spacer(modifier = Modifier.width(8.dp))
-            Box(
-                modifier = Modifier
-                    .background(MediumGreen, RoundedCornerShape(50.dp))
-                    .padding(horizontal = 8.dp, vertical = 2.dp),
-                contentAlignment = Alignment.Center
+        if (count != null) {
+            Surface(
+                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    text = badge.toString(),
+                    text = "$count New",
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.error
                 )
             }
         }
@@ -214,86 +242,74 @@ private fun AnnouncementCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isRead) Color(0xFFF9F9F9) else Color.White
+            containerColor = if (isRead) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isRead) 0.dp else 2.dp
-        )
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isRead) 0.dp else 2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .background(
-                            if (isRead) Color(0xFFEEEEEE) else PaleGreen,
-                            RoundedCornerShape(8.dp)
-                        )
-                        .padding(horizontal = 10.dp, vertical = 3.dp)
+                Surface(
+                    color = if (isRead) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f) else PaleGreen,
+                    shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
                         text = category,
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = if (isRead) Color(0xFF888888) else MediumGreen
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = if (isRead) MaterialTheme.colorScheme.onSurfaceVariant else MediumGreen
                     )
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (!isRead) {
-                        Box(
-                            modifier = Modifier
-                                .size(7.dp)
-                                .background(MediumGreen, CircleShape)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                    }
-                    Text(
-                        text = date,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF888888)
-                    )
-                }
+                
+                Text(
+                    text = date,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleSmall.copy(
-                    fontWeight = if (isRead) FontWeight.Normal else FontWeight.SemiBold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 ),
-                color = if (isRead) Color(0xFF666666) else DarkGreen
+                color = if (isRead) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = content,
-                style = MaterialTheme.typography.bodySmall,
-                color = if (isRead) Color(0xFF999999) else Color(0xFF444444)
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (isRead) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                lineHeight = 20.sp
             )
 
             if (!isRead) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = onMarkAsRead,
-                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MediumGreen,
                         contentColor = Color.White
                     ),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
-                    modifier = Modifier.height(34.dp)
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
+                    Icon(Icons.Rounded.DoneAll, null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Mark as Read",
-                        style = MaterialTheme.typography.labelMedium
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 }
             }
